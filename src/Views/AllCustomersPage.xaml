@@ -1,0 +1,455 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             xmlns:models="clr-namespace:TapeTracker.Models"
+             x:Class="TapeTracker.Views.AllCustomersPage"
+             x:DataType="vm:AllCustomersViewModel"
+             Title="{Binding L.AllCustomersLabel}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.ToolbarItems>
+        <!-- Export is admin-only (data-wide operation across the whole shop). -->
+        <ToolbarItem Text="{Binding L.ExportExcelLabel}"
+                     Command="{Binding ExportAllToExcelCommand}"
+                     Order="Primary"
+                     Priority="0"
+                     IsEnabled="{Binding Auth.CanExportOrBackup}" />
+        <ToolbarItem Text="{Binding L.LogoutLabel}"
+                     Command="{Binding LogoutCommand}"
+                     Order="Secondary" />
+    </ContentPage.ToolbarItems>
+
+    <Grid x:Name="RootGrid" RowDefinitions="Auto,Auto,Auto,Auto,*">
+
+        <!-- ═══════════════ HEADER ═══════════════ -->
+        <Border Grid.Row="0" StrokeThickness="0" Stroke="Transparent" Padding="20,22,20,32">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4F46E5" Offset="0.0" />
+                    <GradientStop Color="#6D28D9" Offset="0.55" />
+                    <GradientStop Color="#DB2777" Offset="1.0" />
+                </LinearGradientBrush>
+            </Border.Background>
+
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                <!-- Icon badge -->
+                <Border Grid.Column="0"
+                        WidthRequest="46" HeightRequest="46"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#33FFFFFF"
+                        Stroke="#55FFFFFF" StrokeThickness="1"
+                        VerticalOptions="Center">
+                    <Label Text="&#x1F465;" FontSize="22"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+
+                <!-- Title block -->
+                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                    <Label Text="{Binding L.DirectoryLabel}"
+                           FontFamily="OpenSansSemibold" FontSize="11"
+                           CharacterSpacing="1.4"
+                           TextColor="#C7D2FE" />
+                    <Label FontFamily="OpenSansSemibold" FontSize="22"
+                           TextColor="White">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{Binding Customers.Count}" />
+                                <Span Text=" " />
+                                <Span Text="{Binding L.CustomersLabel}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </VerticalStackLayout>
+
+                <!-- Export CTA (admin-only). -->
+                <Border Grid.Column="2"
+                        StrokeShape="RoundRectangle 20"
+                        BackgroundColor="White"
+                        StrokeThickness="0"
+                        Padding="14,8" VerticalOptions="Center"
+                        IsVisible="{Binding Auth.CanExportOrBackup}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ExportAllToExcelCommand}" />
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout Spacing="6">
+                        <Label Text="&#x1F4CA;" FontSize="14" VerticalOptions="Center" />
+                        <Label Text="{Binding L.ExportLabel}" FontSize="13" FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════ SEARCH BAR (floating over header) ═══════════════ -->
+        <Border Grid.Row="1"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                StrokeThickness="1"
+                Margin="18,-18,18,10"
+                Padding="14,4">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.08" />
+            </Border.Shadow>
+            <Grid ColumnDefinitions="Auto,*">
+                <Label Grid.Column="0" Text="&#x1F50D;"
+                       FontSize="14" VerticalOptions="Center"
+                       Opacity="0.55" Margin="4,0,6,0" />
+                <SearchBar Grid.Column="1"
+                           Placeholder="{Binding L.SearchPlaceholder}"
+                           Text="{Binding SearchText}"
+                           SearchCommand="{Binding SearchCommand}"
+                           BackgroundColor="Transparent" />
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════ FILTER CHIPS ═══════════════ -->
+        <VerticalStackLayout Grid.Row="2" Spacing="8" Margin="0,0,0,4">
+            <Label Text="{Binding L.FilterByStatusLabel}" Style="{StaticResource SectionTitle}" Margin="20,0,20,0" />
+            <ScrollView Orientation="Horizontal" Margin="18,0" HeightRequest="46">
+                <HorizontalStackLayout Spacing="8" Padding="0,4">
+
+                    <!-- Chip pattern: selected  → solid chip-color bg + white text
+                                         unselected → white bg + chip-color text + chip-color border -->
+                    <Border StrokeShape="RoundRectangle 20"
+                            BackgroundColor="{Binding IsAllSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#FFFFFF'}"
+                            Stroke="#4F46E5" StrokeThickness="1" Padding="16,8">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding FilterByStatusCommand}" CommandParameter="" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Label Text="&#x2731;" FontSize="10"
+                                   TextColor="{Binding IsAllSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#4F46E5'}"
+                                   VerticalOptions="Center" />
+                            <Label Text="{Binding L.AllLabel}" FontSize="12" FontFamily="OpenSansSemibold"
+                                   TextColor="{Binding IsAllSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#4F46E5'}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <Border StrokeShape="RoundRectangle 20"
+                            BackgroundColor="{Binding IsReceivedSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#64748B|#FFFFFF'}"
+                            Stroke="#64748B" StrokeThickness="1" Padding="16,8">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding FilterByStatusCommand}" CommandParameter="Received" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <BoxView WidthRequest="6" HeightRequest="6" CornerRadius="3"
+                                     BackgroundColor="{Binding IsReceivedSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#64748B'}"
+                                     VerticalOptions="Center" />
+                            <Label Text="{Binding L.StatusReceived}" FontSize="12" FontFamily="OpenSansSemibold"
+                                   TextColor="{Binding IsReceivedSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#64748B'}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <Border StrokeShape="RoundRectangle 20"
+                            BackgroundColor="{Binding IsCuttingSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#F59E0B|#FFFFFF'}"
+                            Stroke="#F59E0B" StrokeThickness="1" Padding="16,8">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding FilterByStatusCommand}" CommandParameter="Cutting" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <BoxView WidthRequest="6" HeightRequest="6" CornerRadius="3"
+                                     BackgroundColor="{Binding IsCuttingSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#F59E0B'}"
+                                     VerticalOptions="Center" />
+                            <Label Text="{Binding L.StatusCutting}" FontSize="12" FontFamily="OpenSansSemibold"
+                                   TextColor="{Binding IsCuttingSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#B45309'}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <Border StrokeShape="RoundRectangle 20"
+                            BackgroundColor="{Binding IsStitchingSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#3B82F6|#FFFFFF'}"
+                            Stroke="#3B82F6" StrokeThickness="1" Padding="16,8">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding FilterByStatusCommand}" CommandParameter="Stitching" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <BoxView WidthRequest="6" HeightRequest="6" CornerRadius="3"
+                                     BackgroundColor="{Binding IsStitchingSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#3B82F6'}"
+                                     VerticalOptions="Center" />
+                            <Label Text="{Binding L.StatusStitching}" FontSize="12" FontFamily="OpenSansSemibold"
+                                   TextColor="{Binding IsStitchingSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#1D4ED8'}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <Border StrokeShape="RoundRectangle 20"
+                            BackgroundColor="{Binding IsReadySelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#10B981|#FFFFFF'}"
+                            Stroke="#10B981" StrokeThickness="1" Padding="16,8">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding FilterByStatusCommand}" CommandParameter="Ready" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <BoxView WidthRequest="6" HeightRequest="6" CornerRadius="3"
+                                     BackgroundColor="{Binding IsReadySelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#10B981'}"
+                                     VerticalOptions="Center" />
+                            <Label Text="{Binding L.StatusReady}" FontSize="12" FontFamily="OpenSansSemibold"
+                                   TextColor="{Binding IsReadySelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#047857'}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <Border StrokeShape="RoundRectangle 20"
+                            BackgroundColor="{Binding IsDeliveredSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#7C3AED|#FFFFFF'}"
+                            Stroke="#7C3AED" StrokeThickness="1" Padding="16,8">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding FilterByStatusCommand}" CommandParameter="Delivered" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <BoxView WidthRequest="6" HeightRequest="6" CornerRadius="3"
+                                     BackgroundColor="{Binding IsDeliveredSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#7C3AED'}"
+                                     VerticalOptions="Center" />
+                            <Label Text="{Binding L.StatusDelivered}" FontSize="12" FontFamily="OpenSansSemibold"
+                                   TextColor="{Binding IsDeliveredSelected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#6D28D9'}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+
+                </HorizontalStackLayout>
+            </ScrollView>
+        </VerticalStackLayout>
+
+        <!-- ═══════════════ TAG FILTER (DROPDOWN) ═══════════════ -->
+        <!-- Use the Picker directly on WinUI; wrapping it in a Border makes the
+             native ComboBox double up with its own chrome. -->
+        <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto"
+              Padding="20,4,20,6" ColumnSpacing="10"
+              IsVisible="{Binding AvailableTags.Count, Converter={StaticResource GreaterThanZeroConverter}}">
+            <Label Grid.Column="0" FontSize="12" FontFamily="OpenSansSemibold"
+                   TextColor="{StaticResource SubtleText}" VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="&#x1F3F7; " />
+                        <Span Text="{Binding L.FilterByTagLabel}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+
+            <!-- No Title: WinUI renders Picker.Title as a Header above the control. -->
+            <Picker Grid.Column="1"
+                    ItemsSource="{Binding TagFilterOptions}"
+                    SelectedItem="{Binding SelectedTagOption, Mode=TwoWay}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                    TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                    FontSize="14"
+                    HeightRequest="40"
+                    VerticalOptions="Center" />
+
+            <!-- Clear filter (only visible when a tag is active) -->
+            <Border Grid.Column="2"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                    Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                    StrokeThickness="1"
+                    HeightRequest="40" WidthRequest="40"
+                    VerticalOptions="Center"
+                    IsVisible="{Binding ActiveTag, Converter={StaticResource NullToBoolConverter}}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnClearTagFilterTapped" />
+                </Border.GestureRecognizers>
+                <Label Text="&#x2715;" FontSize="13"
+                       TextColor="{StaticResource SubtleText}"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+        </Grid>
+
+        <!-- ═══════════════ CUSTOMER LIST ═══════════════ -->
+        <CollectionView Grid.Row="4"
+                        ItemsSource="{Binding Customers}"
+                        Margin="18,10,18,12">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center"
+                                     Spacing="14" Padding="32,48">
+                    <Border WidthRequest="86" HeightRequest="86"
+                            StrokeShape="RoundRectangle 43"
+                            Background="{StaticResource AvatarGradient}"
+                            StrokeThickness="0"
+                            HorizontalOptions="Center">
+                        <Label Text="&#x1F50D;" FontSize="38"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Text="{Binding L.NoCustomersFound}"
+                           FontFamily="OpenSansSemibold" FontSize="18"
+                           TextColor="{StaticResource PrimaryText}"
+                           HorizontalOptions="Center" />
+                    <Label Text="{Binding L.TryDifferentSearch}"
+                           FontSize="13"
+                           TextColor="{StaticResource SubtleText}"
+                           HorizontalTextAlignment="Center"
+                           MaximumWidthRequest="320" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Customer">
+                    <!-- No Border.Shadow in item templates: crashes Microsoft.UI.Xaml on Windows. -->
+                    <Border Margin="0,4" Padding="0"
+                            StrokeShape="RoundRectangle 16"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                            StrokeThickness="1">
+                        <!-- Tap uses code-behind handlers (see AllCustomersPage.xaml.cs). Bindings
+                             with RelativeSource/x:Reference are unreliable inside virtualised
+                             CollectionView DataTemplates on WinUI 3, so we wire taps directly. -->
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCustomerCardTapped" />
+                        </Border.GestureRecognizers>
+
+                        <Grid ColumnDefinitions="4,Auto,*,Auto,Auto" ColumnSpacing="0"
+                              BackgroundColor="#01FFFFFF">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCustomerCardTapped" />
+                            </Grid.GestureRecognizers>
+
+                            <!-- Accent bar -->
+                            <Border Grid.Column="0"
+                                    StrokeThickness="0" Stroke="Transparent"
+                                    WidthRequest="4"
+                                    Background="{StaticResource AccentBarGradient}"
+                                    InputTransparent="True" />
+
+                            <!-- Avatar -->
+                            <Border Grid.Column="1"
+                                    StrokeShape="RoundRectangle 24"
+                                    Background="{StaticResource AvatarGradient}"
+                                    WidthRequest="48" HeightRequest="48"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center"
+                                    Margin="14,16,0,16"
+                                    InputTransparent="True">
+                                <Label FontSize="17" FontFamily="OpenSansSemibold"
+                                       TextColor="{StaticResource Primary}"
+                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                       Text="{Binding Name, Converter={StaticResource InitialsConverter}}" />
+                            </Border>
+
+                            <!-- Info column with its own gesture (belt-and-suspenders). -->
+                            <VerticalStackLayout Grid.Column="2" Spacing="6"
+                                                 VerticalOptions="Center"
+                                                 HorizontalOptions="Fill"
+                                                 BackgroundColor="#01FFFFFF"
+                                                 Margin="14,14,0,14">
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnCustomerCardTapped" />
+                                </VerticalStackLayout.GestureRecognizers>
+                                <Label Text="{Binding Name}"
+                                       FontFamily="OpenSansSemibold" FontSize="16"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+
+                                <HorizontalStackLayout Spacing="6">
+                                    <Label Text="&#x1F4DE;" FontSize="11" VerticalOptions="Center" Opacity="0.75" />
+                                    <Label Text="{Binding Phone}"
+                                           FontSize="13"
+                                           TextColor="{StaticResource SubtleText}"
+                                           VerticalOptions="Center" />
+                                    <!-- Family / group tag chip - shown only when present -->
+                                    <Border StrokeShape="RoundRectangle 8"
+                                            BackgroundColor="{StaticResource WarningSoft}"
+                                            StrokeThickness="0"
+                                            Padding="7,2"
+                                            VerticalOptions="Center"
+                                            IsVisible="{Binding Tag, Converter={StaticResource NullToBoolConverter}}">
+                                        <HorizontalStackLayout Spacing="3">
+                                            <Label Text="&#x1F3F7;" FontSize="10" VerticalOptions="Center" />
+                                            <Label Text="{Binding Tag}" FontSize="11"
+                                                   FontFamily="OpenSansSemibold"
+                                                   TextColor="#B45309" VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                </HorizontalStackLayout>
+
+                                <HorizontalStackLayout Spacing="8">
+                                    <Border StrokeShape="RoundRectangle 6"
+                                            BackgroundColor="{StaticResource PrimarySoft}"
+                                            StrokeThickness="0" Padding="8,3">
+                                        <HorizontalStackLayout Spacing="4">
+                                            <Label Text="#" FontSize="10"
+                                                   FontFamily="OpenSansSemibold"
+                                                   TextColor="{StaticResource PrimaryLight}"
+                                                   VerticalOptions="Center" />
+                                            <Label Text="{Binding OrderNumber}"
+                                                   FontSize="11" FontFamily="OpenSansSemibold"
+                                                   TextColor="{StaticResource Primary}"
+                                                   VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+                                    </Border>
+
+                                    <Border IsVisible="{Binding DeliveryDate, Converter={StaticResource NullToBoolConverter}}"
+                                            StrokeShape="RoundRectangle 6"
+                                            BackgroundColor="{StaticResource WarningSoft}"
+                                            StrokeThickness="0" Padding="8,3">
+                                        <HorizontalStackLayout Spacing="4">
+                                            <Label Text="&#x1F69A;" FontSize="10" VerticalOptions="Center" />
+                                            <Label Text="{Binding DeliveryDate, StringFormat='{0:dd MMM}'}"
+                                                   FontSize="11" FontFamily="OpenSansSemibold"
+                                                   TextColor="{Binding DeliveryDate, Converter={StaticResource DeliveryDateColorConverter}}"
+                                                   VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+
+                            <!-- Delete (outlined) - own gesture prevents outer tap from firing.
+                                 Admin-only. -->
+                            <Border Grid.Column="3"
+                                    StrokeShape="RoundRectangle 14"
+                                    BackgroundColor="#01FFFFFF"
+                                    Stroke="{StaticResource DangerRed}"
+                                    StrokeThickness="1"
+                                    WidthRequest="28" HeightRequest="28"
+                                    VerticalOptions="Center"
+                                    Margin="0,0,10,0"
+                                    IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.Auth.CanDeleteOrders}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnCustomerDeleteTapped" />
+                                </Border.GestureRecognizers>
+                                <Label Text="&#x00D7;" FontSize="16" FontFamily="OpenSansSemibold"
+                                       TextColor="{StaticResource DangerRed}"
+                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                       InputTransparent="True" />
+                            </Border>
+
+                            <!-- Date block -->
+                            <Border Grid.Column="4"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="{StaticResource PrimarySoft}"
+                                    StrokeThickness="0"
+                                    Padding="12,8"
+                                    VerticalOptions="Center"
+                                    Margin="0,0,16,0"
+                                    WidthRequest="60"
+                                    InputTransparent="True">
+                                <VerticalStackLayout Spacing="0" HorizontalOptions="Center">
+                                    <Label Text="{Binding Date, StringFormat='{0:MMM}'}"
+                                           FontSize="10" CharacterSpacing="1.2"
+                                           FontFamily="OpenSansSemibold"
+                                           TextColor="{StaticResource Primary}"
+                                           HorizontalOptions="Center" />
+                                    <Label Text="{Binding Date, StringFormat='{0:dd}'}"
+                                           FontFamily="OpenSansSemibold" FontSize="22"
+                                           TextColor="{StaticResource Primary}"
+                                           HorizontalOptions="Center" />
+                                    <Label Text="{Binding Date, StringFormat='{0:yyyy}'}"
+                                           FontSize="9"
+                                           TextColor="{StaticResource PrimaryLight}"
+                                           HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <ActivityIndicator Grid.Row="4"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           Color="{StaticResource Primary}" />
+    </Grid>
+</ContentPage>

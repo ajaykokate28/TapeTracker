@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:TapeTracker.Views"
+             x:Class="TapeTracker.Views.SplashPage"
+             x:DataType="views:SplashPage+SplashBindingContext"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="#0F172A">
+
+    <ContentPage.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#0F172A" Offset="0" />
+            <GradientStop Color="#1E1B4B" Offset="0.55" />
+            <GradientStop Color="#4C1D95" Offset="1" />
+        </LinearGradientBrush>
+    </ContentPage.Background>
+
+    <Grid>
+
+        <!-- Pulse rings (hollow circles, centered on logo) -->
+        <Border x:Name="Ring1"
+                WidthRequest="160" HeightRequest="160"
+                StrokeShape="RoundRectangle 80"
+                Stroke="#6366F1" StrokeThickness="1.5"
+                BackgroundColor="Transparent"
+                HorizontalOptions="Center" VerticalOptions="Center"
+                Opacity="0" />
+
+        <Border x:Name="Ring2"
+                WidthRequest="220" HeightRequest="220"
+                StrokeShape="RoundRectangle 110"
+                Stroke="#818CF8" StrokeThickness="1"
+                BackgroundColor="Transparent"
+                HorizontalOptions="Center" VerticalOptions="Center"
+                Opacity="0" />
+
+        <Border x:Name="Ring3"
+                WidthRequest="280" HeightRequest="280"
+                StrokeShape="RoundRectangle 140"
+                Stroke="#818CF8" StrokeThickness="0.6"
+                BackgroundColor="Transparent"
+                HorizontalOptions="Center" VerticalOptions="Center"
+                Opacity="0" />
+
+        <!-- Main content column -->
+        <VerticalStackLayout HorizontalOptions="Center"
+                             VerticalOptions="Center"
+                             Spacing="0">
+
+            <!-- Logo circle -->
+            <Border x:Name="LogoContainer"
+                    WidthRequest="120" HeightRequest="120"
+                    StrokeShape="RoundRectangle 60"
+                    Stroke="#6366F1" StrokeThickness="2"
+                    Scale="0" Opacity="0"
+                    HorizontalOptions="Center">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4F46E5" Offset="0" />
+                        <GradientStop Color="#7C3AED" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Border.Shadow>
+                    <Shadow Brush="#6366F1" Offset="0,0" Radius="24" Opacity="0.55" />
+                </Border.Shadow>
+                <Image Source="tapemark.svg"
+                       WidthRequest="80" HeightRequest="80"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       Aspect="AspectFit" />
+            </Border>
+
+            <BoxView HeightRequest="28" Color="Transparent" />
+
+            <!-- App name -->
+            <Label x:Name="AppTitle"
+                   Text="TapeTracker"
+                   FontSize="40"
+                   FontAttributes="Bold"
+                   TextColor="#FFFFFF"
+                   CharacterSpacing="2"
+                   HorizontalOptions="Center"
+                   Opacity="0"
+                   TranslationY="30">
+                <Label.Shadow>
+                    <Shadow Brush="#6366F1" Offset="0,0" Radius="18" Opacity="0.6" />
+                </Label.Shadow>
+            </Label>
+
+            <!-- Tagline -->
+            <Label x:Name="Tagline"
+                   Text="{Binding L.PrecisionTailoringLabel}"
+                   FontSize="12"
+                   TextColor="#818CF8"
+                   CharacterSpacing="3.5"
+                   HorizontalOptions="Center"
+                   Opacity="0"
+                   TranslationY="14"
+                   Margin="0,10,0,0" />
+
+        </VerticalStackLayout>
+
+        <!-- Loading dots at bottom -->
+        <HorizontalStackLayout x:Name="LoadingDots"
+                               HorizontalOptions="Center"
+                               VerticalOptions="End"
+                               Margin="0,0,0,68"
+                               Spacing="12"
+                               Opacity="0">
+            <BoxView x:Name="Dot1" WidthRequest="9" HeightRequest="9" CornerRadius="5" Color="#6366F1" />
+            <BoxView x:Name="Dot2" WidthRequest="9" HeightRequest="9" CornerRadius="5" Color="#818CF8" />
+            <BoxView x:Name="Dot3" WidthRequest="9" HeightRequest="9" CornerRadius="5" Color="#6366F1" />
+        </HorizontalStackLayout>
+
+    </Grid>
+</ContentPage>

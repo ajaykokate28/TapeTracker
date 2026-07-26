@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  App-icon background (v7 — flat brand-gradient tile).
+
+  Design brief:
+    ● Single symbol, 1–2 colors, minimal detail so the mark reads at 16 px.
+    ● Uses the app's own brand gradient (#4F46E5 → #6D28D9 → #DB2777) so
+      the taskbar icon feels of-a-piece with every gradient header inside
+      the app (login, dashboard, calendar, delivery-cards, settings).
+    ● The very subtle top-left radial highlight gives the tile a hint of
+      depth without going 3D — keeps it looking flat / modern at all
+      sizes, but stops it from feeling like a paint chip.
+    ● Full-bleed 456×456: Windows and other MAUI targets crop this to
+      whatever mask each surface uses (rounded square for taskbar,
+      circle for tiles) — so we don't pre-round; we let the platform
+      shape it and simply keep our foreground glyph well inside a safe
+      zone.
+-->
+<svg width="456" height="456" viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Brand gradient — matches every purple/pink hero card in the app. -->
+    <linearGradient id="brandBg" x1="0" y1="0" x2="456" y2="456" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#4F46E5"/>
+      <stop offset="55%"  stop-color="#6D28D9"/>
+      <stop offset="100%" stop-color="#DB2777"/>
+    </linearGradient>
+
+    <!-- Top-left soft-light highlight for a hint of depth. Kept low-opacity
+         so the icon still reads as flat when downscaled to 16/24/32 px. -->
+    <radialGradient id="topGloss" cx="152" cy="140" r="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.20"/>
+      <stop offset="60%"  stop-color="#FFFFFF" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Bottom-right vignette for weight; darkens the corner very gently. -->
+    <radialGradient id="cornerShade" cx="380" cy="380" r="220" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#000000" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="456" height="456" fill="url(#brandBg)"/>
+  <rect width="456" height="456" fill="url(#topGloss)"/>
+  <rect width="456" height="456" fill="url(#cornerShade)"/>
+</svg>

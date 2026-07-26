@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="TapeTracker.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:TapeTracker.Views"
+    xmlns:controls="clr-namespace:TapeTracker.Controls"
+    Title="TapeTracker"
+    Shell.TabBarIsVisible="False"><!--
+        TabBarIsVisible=False suppresses the top tab strip that Shell would
+        otherwise draw when multiple ShellContents live inside a single
+        FlyoutItem (below). We want the classic "flyout-only" navigation
+        with just three side-menu entries — no tab row on top of the pages
+        themselves. The tab strip is what MAUI Shell inserts to let you
+        switch between siblings inside a FlyoutItem; hiding it here is the
+        supported knob for suppressing it without changing the underlying
+        navigation shape (which is the one that reliably swaps pages on
+        Windows Shell — see the FlyoutItem comment further down).
+    -->
+
+    <!--
+        Shell-wide TitleView — the animated brand mark is set once here so
+        it appears (and continuously breathes) on every page inside the
+        Shell without any per-page markup.
+
+        Layout: page-title text on the left (bound to the current page's
+        Title so it updates on navigation), animated brand mark on the
+        right. VerticalOptions=Fill lets both children centre-align inside
+        whatever height the platform allocates for the nav bar.
+    -->
+    <Shell.TitleView>
+        <Grid x:DataType="ContentPage"
+              ColumnDefinitions="*,Auto"
+              Padding="0,0,12,0"
+              VerticalOptions="Fill">
+            <Label Grid.Column="0"
+                   Text="{Binding Title}"
+                   VerticalOptions="Center"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   LineBreakMode="TailTruncation" />
+            <controls:AnimatedBrandMark Grid.Column="1"
+                                        WidthRequest="32"
+                                        HeightRequest="32"
+                                        VerticalOptions="Center" />
+        </Grid>
+    </Shell.TitleView>
+
+    <!--
+        Canonical MAUI shape for "one flyout, N destinations": a single
+        FlyoutItem container with FlyoutDisplayOptions="AsMultipleItems".
+        Each inner ShellContent shows up as its own flyout entry, and Shell
+        drives navigation between them by swapping ShellContent.CurrentItem.
+
+        Earlier iterations tried:
+          ● Bare <ShellContent> siblings directly under <Shell> — MAUI's
+            implicit conversion sometimes collapsed them into a single
+            FlyoutItem with sibling Tabs, which rendered tap-through as
+            "same page" for the non-primary entries.
+          ● Each destination wrapped in its own <FlyoutItem> — on Windows
+            Shell that route landed us in a state where tapping a flyout
+            entry closed the menu but didn't swap the current page.
+
+        The "one FlyoutItem holding multiple ShellContents with
+        AsMultipleItems" pattern is what MAUI's own docs recommend for this
+        exact layout and is the one that reliably fires the
+        ShellContent-swap navigation on WinUI 3.
+    -->
+    <FlyoutItem Title="TapeTracker"
+                Route="MainFlyout"
+                FlyoutDisplayOptions="AsMultipleItems">
+
+        <ShellContent Title="Customers"
+                      ContentTemplate="{DataTemplate views:CustomerListPage}"
+                      Route="CustomerListPage" />
+
+        <ShellContent Title="Dashboard"
+                      ContentTemplate="{DataTemplate views:DashboardPage}"
+                      Route="DashboardPage" />
+
+        <!--
+            Calendar is a first-class tab so tailors can jump to a monthly
+            view of upcoming deliveries in one tap. The
+            Routing.RegisterRoute() call in AppShell.xaml.cs was removed
+            for this route to avoid "Ambiguous routes matched for
+            //IMPL_DeliveryCalendarPage/..." when both entries collide on
+            the same key.
+        -->
+        <ShellContent Title="Calendar"
+                      ContentTemplate="{DataTemplate views:DeliveryCalendarPage}"
+                      Route="DeliveryCalendarPage" />
+
+    </FlyoutItem>
+
+</Shell>

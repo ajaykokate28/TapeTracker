@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             x:Class="TapeTracker.Views.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.Resources>
+        <Style x:Key="FieldWrap" TargetType="Border">
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Padding" Value="10,0" />
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontFamily" Value="OpenSansSemibold" />
+            <Setter Property="CharacterSpacing" Value="0.6" />
+            <Setter Property="TextColor" Value="{StaticResource Gray500}" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,40">
+
+            <!-- ═══════════════ HEADER ═══════════════ -->
+            <Border StrokeThickness="0" Padding="24,44,24,60">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4F46E5" Offset="0.0" />
+                        <GradientStop Color="#6D28D9" Offset="0.55" />
+                        <GradientStop Color="#DB2777" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <VerticalStackLayout Spacing="14" HorizontalOptions="Center">
+                    <!-- Brand mark. The self-contained emblem carries its own
+                         disc + ring, so no wrapper container needed. -->
+                    <Image Source="tapemark.svg"
+                           WidthRequest="80" HeightRequest="80"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           Aspect="AspectFit" />
+                    <Label Text="{Binding L.LoginTitle}"
+                           FontFamily="OpenSansSemibold" FontSize="24"
+                           TextColor="White" HorizontalOptions="Center" />
+                    <Label Text="{Binding L.LoginSubtitle}"
+                           FontSize="13" TextColor="#E0E7FF"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══════════════ CARD ═══════════════ -->
+            <Border Margin="18,-32,18,0"
+                    StrokeShape="RoundRectangle 16"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                    Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                    Padding="20,22">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,8" Radius="24" Opacity="0.08" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="16">
+
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{Binding L.UsernameLabel}" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldWrap}">
+                            <Entry Text="{Binding Username}"
+                                   Placeholder="{Binding L.UsernamePh}"
+                                   ReturnType="Next" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{Binding L.PasswordLabel}" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldWrap}">
+                            <Entry Text="{Binding Password}"
+                                   IsPassword="True"
+                                   ReturnType="Go"
+                                   ReturnCommand="{Binding SignInCommand}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                        <CheckBox IsChecked="{Binding RememberMe}"
+                                  Color="{StaticResource Primary}"
+                                  VerticalOptions="Center" />
+                        <Label Text="{Binding L.RememberMeLabel}"
+                               FontSize="13" VerticalOptions="Center"
+                               TextColor="{StaticResource SubtleText}" />
+                    </HorizontalStackLayout>
+
+                    <!-- Error banner -->
+                    <Border IsVisible="{Binding HasError}"
+                            StrokeShape="RoundRectangle 10"
+                            BackgroundColor="{StaticResource DangerSoft}"
+                            Stroke="{StaticResource DangerRed}" StrokeThickness="1"
+                            Padding="12,10">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="&#x26A0;" FontSize="14"
+                                   TextColor="{StaticResource DangerRed}" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding ErrorMessage}"
+                                   FontSize="12" TextColor="{StaticResource DangerRed}"
+                                   VerticalOptions="Center" LineBreakMode="WordWrap" />
+                        </Grid>
+                    </Border>
+
+                    <!--
+                        Success banner — shown once after a self-service
+                        password reset so the user knows why they're back on
+                        this screen. Green (#059669) matches the rest of the
+                        app's affirmation cues (paid-badge, saved-toast).
+                    -->
+                    <Border IsVisible="{Binding HasInfo}"
+                            StrokeShape="RoundRectangle 10"
+                            BackgroundColor="#D1FAE5"
+                            Stroke="#059669" StrokeThickness="1"
+                            Padding="12,10">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="&#x2705;" FontSize="14"
+                                   TextColor="#059669" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding InfoMessage}"
+                                   FontSize="12" TextColor="#065F46"
+                                   VerticalOptions="Center" LineBreakMode="WordWrap" />
+                        </Grid>
+                    </Border>
+
+                    <Button Text="{Binding L.SignInLabel}"
+                            Command="{Binding SignInCommand}"
+                            IsEnabled="{Binding IsNotBusy}"
+                            HeightRequest="52" CornerRadius="12"
+                            FontFamily="OpenSansSemibold" FontSize="15" />
+
+                    <!--
+                        Forgot-password link. Styled as an underlined text
+                        button instead of a full button so it doesn't visually
+                        compete with the primary "Sign in" CTA above it.
+                    -->
+                    <Border StrokeThickness="0"
+                            BackgroundColor="Transparent"
+                            HorizontalOptions="Center"
+                            Padding="4,2">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenForgotPasswordCommand}" />
+                        </Border.GestureRecognizers>
+                        <Label Text="{Binding L.ForgotPasswordLinkLabel}"
+                               FontSize="13" FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource Primary}"
+                               TextDecorations="Underline"
+                               InputTransparent="True" />
+                    </Border>
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       Color="{StaticResource Primary}"
+                                       HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Language pill (so a locked-out user can still switch language) -->
+            <Border Margin="0,20,0,0"
+                    HorizontalOptions="Center"
+                    StrokeShape="RoundRectangle 18"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                    Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                    Padding="14,7">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding L.ToggleLanguageCommand}" />
+                </Border.GestureRecognizers>
+                <Label Text="{Binding L.LangToggleLabel}"
+                       FontSize="12" FontFamily="OpenSansSemibold"
+                       TextColor="{StaticResource Primary}" />
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

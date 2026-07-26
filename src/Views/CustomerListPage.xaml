@@ -1,0 +1,668 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             xmlns:models="clr-namespace:TapeTracker.Models"
+             xmlns:services="clr-namespace:TapeTracker.Services"
+             x:Class="TapeTracker.Views.CustomerListPage"
+             x:DataType="vm:CustomerListViewModel"
+             Title="TapeTracker"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.ToolbarItems>
+        <!-- Backup + Restore are admin-only (they touch every row across the whole shop). -->
+        <ToolbarItem Text="{Binding L.BackupLabel}"  Command="{Binding BackupCommand}"  Order="Secondary"
+                     IsEnabled="{Binding Auth.CanExportOrBackup}" />
+        <ToolbarItem Text="{Binding L.RestoreLabel}" Command="{Binding RestoreCommand}" Order="Secondary"
+                     IsEnabled="{Binding Auth.CanExportOrBackup}" />
+        <ToolbarItem Text="{Binding L.LogoutLabel}"  Command="{Binding LogoutCommand}"  Order="Secondary" />
+    </ContentPage.ToolbarItems>
+
+    <Grid x:Name="RootGrid" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
+
+        <!-- ═══════════════ HEADER ═══════════════ -->
+        <Border Grid.Row="0" StrokeThickness="0" Stroke="Transparent" Padding="20,22,20,26">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4F46E5" Offset="0.0" />
+                    <GradientStop Color="#6D28D9" Offset="0.55" />
+                    <GradientStop Color="#DB2777" Offset="1.0" />
+                </LinearGradientBrush>
+            </Border.Background>
+
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="18">
+
+                <!-- Row 0: brand + toggles -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10">
+
+                    <!-- Brand mark. tapemark.svg is now a self-contained 3D
+                         emblem (indigo disc + amber ring + cream T), so the
+                         wrapper Border stays transparent — the emblem
+                         supplies its own contrast on ANY page background. -->
+                    <HorizontalStackLayout Grid.Column="0" Spacing="12" VerticalOptions="Center">
+                        <Image Source="tapemark.svg"
+                               WidthRequest="46" HeightRequest="46"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               Aspect="AspectFit" />
+                        <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                            <Label Text="TapeTracker" FontFamily="OpenSansSemibold"
+                                   FontSize="22" TextColor="White" />
+                            <Label Text="{Binding L.AppSubtitle}"
+                                   FontSize="11" TextColor="#E0E7FF"
+                                   CharacterSpacing="0.4" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+
+                    <!-- Language pill -->
+                    <Border Grid.Column="1"
+                            StrokeShape="RoundRectangle 18"
+                            BackgroundColor="#22FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            Padding="12,7" VerticalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding L.ToggleLanguageCommand}" />
+                        </Border.GestureRecognizers>
+                        <Label Text="{Binding L.LangToggleLabel}"
+                               FontSize="12" FontFamily="OpenSansSemibold"
+                               TextColor="White" VerticalOptions="Center" />
+                    </Border>
+
+                    <!--
+                        Text-size pill: cycles through 4 presets (A⁻ / A / A⁺ / A⁺⁺).
+                        Bound to the FontScaleService singleton so the label updates
+                        live and the persisted preset survives restarts.
+                    -->
+                    <Border Grid.Column="2"
+                            StrokeShape="RoundRectangle 18"
+                            BackgroundColor="#22FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            WidthRequest="46" HeightRequest="36"
+                            VerticalOptions="Center"
+                            ToolTipProperties.Text="{Binding L.TextSizeTooltip}">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={x:Static services:FontScaleService.Current}, Path=CycleTextSizeCommand}" />
+                        </Border.GestureRecognizers>
+                        <Label Text="{Binding Source={x:Static services:FontScaleService.Current}, Path=Label}"
+                               FontSize="13" FontFamily="OpenSansSemibold"
+                               TextColor="White"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <!-- Theme toggle -->
+                    <Border Grid.Column="3"
+                            StrokeShape="RoundRectangle 18"
+                            BackgroundColor="#22FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            WidthRequest="36" HeightRequest="36"
+                            VerticalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding T.ToggleThemeCommand}" />
+                        </Border.GestureRecognizers>
+                        <Label Text="{Binding T.ThemeIcon}"
+                               FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
+                    </Border>
+
+                    <!-- User pill: name + role. Tap to sign out. -->
+                    <Border Grid.Column="4"
+                            StrokeShape="RoundRectangle 18"
+                            BackgroundColor="#22FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            Padding="10,6" VerticalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding LogoutCommand}" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Label Text="&#x1F464;" FontSize="12" TextColor="White" VerticalOptions="Center" />
+                            <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                                <Label Text="{Binding Auth.CurrentUser.DisplayName}"
+                                       FontSize="11" FontFamily="OpenSansSemibold"
+                                       TextColor="White" LineBreakMode="TailTruncation"
+                                       MaximumWidthRequest="90" />
+                                <Label FontSize="9" TextColor="#E0E7FF"
+                                       IsVisible="{Binding Auth.IsAdmin}"
+                                       Text="{Binding L.AdminRoleLabel}" />
+                                <Label FontSize="9" TextColor="#E0E7FF"
+                                       IsVisible="{Binding Auth.IsAdmin, Converter={StaticResource InvertedBoolConverter}}"
+                                       Text="{Binding L.EmployeeRoleLabel}" />
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Row 1: primary actions (admin-only; employees can only view + advance status). -->
+                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10"
+                      IsVisible="{Binding Auth.CanManageCustomers}">
+
+                    <!-- Scan card -->
+                    <Border Grid.Column="0"
+                            StrokeShape="RoundRectangle 14"
+                            BackgroundColor="#26FFFFFF"
+                            Stroke="#44FFFFFF" StrokeThickness="1"
+                            Padding="14,12">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ScanSlipCommand}" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                            <Label Text="&#x1F4F7;" FontSize="18" VerticalOptions="Center" />
+                            <Label Text="{Binding L.ScanSlipLabel}" FontFamily="OpenSansSemibold"
+                                   FontSize="14" TextColor="White" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- Add card (filled) -->
+                    <Border Grid.Column="1"
+                            StrokeShape="RoundRectangle 14"
+                            BackgroundColor="White"
+                            StrokeThickness="0"
+                            Padding="14,12">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding AddNewCommand}" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label Text="+" FontFamily="OpenSansSemibold"
+                                   FontSize="18" TextColor="{StaticResource Primary}"
+                                   VerticalOptions="Center" />
+                            <Label Text="{Binding L.AddCustomerLabel}" FontFamily="OpenSansSemibold"
+                                   FontSize="14" TextColor="{StaticResource Primary}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════ SEARCH BAR ═══════════════ -->
+        <Border Grid.Row="1" x:Name="SearchRow"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                StrokeThickness="1"
+                Margin="18,-14,18,10"
+                Padding="14,4">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.08" />
+            </Border.Shadow>
+            <Grid ColumnDefinitions="Auto,*">
+                <Label Grid.Column="0" Text="&#x1F50D;"
+                       FontSize="14" VerticalOptions="Center"
+                       Opacity="0.55" Margin="4,0,6,0" />
+                <SearchBar Grid.Column="1"
+                           Placeholder="{Binding L.SearchPlaceholder}"
+                           Text="{Binding SearchText}"
+                           SearchCommand="{Binding SearchCommand}"
+                           BackgroundColor="Transparent" />
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════ BACKUP-STALE BANNER ═══════════════ -->
+        <!--
+            Soft amber warning shown when no backup exists or the newest
+            archive is older than the BackupStaleDays threshold (7 days).
+            Admin-only — enforced by the ViewModel, but ShowBackupStaleBanner
+            drives the actual visibility so employees never even see the row
+            allocation flash. Two tap targets: primary "Backup now" jumps
+            to BackupManagerPage, secondary × dismisses for the session.
+        -->
+        <Border Grid.Row="2"
+                IsVisible="{Binding ShowBackupStaleBanner}"
+                Margin="16,0,16,10"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{StaticResource WarningSoft}"
+                Stroke="#F59E0B" StrokeThickness="1"
+                Padding="14,10">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                <Label Grid.Column="0" Text="&#x1F4BE;"
+                       FontSize="18" VerticalOptions="Center" />
+                <Label Grid.Column="1"
+                       Text="{Binding BackupStaleMessage}"
+                       FontSize="12"
+                       LineBreakMode="WordWrap"
+                       TextColor="#92400E"
+                       VerticalOptions="Center" />
+
+                <!-- Primary CTA -->
+                <Border Grid.Column="2"
+                        StrokeShape="RoundRectangle 10"
+                        BackgroundColor="#F59E0B"
+                        StrokeThickness="0"
+                        Padding="10,6"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding BackupNowCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding L.BackupNowLabel}"
+                           FontSize="11" FontFamily="OpenSansSemibold"
+                           TextColor="White"
+                           VerticalOptions="Center"
+                           InputTransparent="True" />
+                </Border>
+
+                <!-- Dismiss for session -->
+                <Border Grid.Column="3"
+                        StrokeShape="RoundRectangle 10"
+                        BackgroundColor="Transparent"
+                        Stroke="#F59E0B" StrokeThickness="1"
+                        WidthRequest="30" HeightRequest="30"
+                        VerticalOptions="Center"
+                        ToolTipProperties.Text="{Binding L.DismissLabel}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding DismissBackupBannerCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="&#x2715;" FontSize="11"
+                           TextColor="#92400E"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           InputTransparent="True" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════ URGENT ORDERS WIDGET (Home) ═══════════════ -->
+        <!--
+            Horizontally-scrolling strip of orders that are due today or
+            overdue. Reveals itself only when there's at least one row so
+            the layout stays tight for shops with no active due dates.
+            Each pill taps through to the owning customer's detail page.
+            Kept as a plain BindableLayout inside a horizontal ScrollView —
+            CollectionView with horizontal scroll on WinUI 3 has known
+            hit-testing issues inside virtualised item templates.
+        -->
+        <Border Grid.Row="3"
+                IsVisible="{Binding HasUrgentOrders}"
+                Margin="16,4,16,10"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                StrokeThickness="1"
+                Padding="14,12">
+            <VerticalStackLayout Spacing="10">
+                <HorizontalStackLayout Spacing="8">
+                    <Label Text="&#x26A0;" FontSize="14" VerticalOptions="Center" />
+                    <Label Text="{Binding L.UrgentOrdersTitle}"
+                           FontSize="12" FontFamily="OpenSansSemibold"
+                           CharacterSpacing="1.2"
+                           TextColor="{StaticResource DangerRed}"
+                           VerticalOptions="Center" />
+                    <Border StrokeShape="RoundRectangle 8"
+                            BackgroundColor="{StaticResource DangerRed}"
+                            StrokeThickness="0"
+                            Padding="7,1"
+                            VerticalOptions="Center">
+                        <Label Text="{Binding UrgentOrders.Count}"
+                               FontSize="10" FontFamily="OpenSansSemibold"
+                               TextColor="White"
+                               VerticalOptions="Center" />
+                    </Border>
+                </HorizontalStackLayout>
+
+                <ScrollView Orientation="Horizontal"
+                            HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout Spacing="8"
+                                           BindableLayout.ItemsSource="{Binding UrgentOrders}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:UrgentOrderItem">
+                                <Border StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{AppThemeBinding Light=#FFFBEB, Dark=#3F2A0F}"
+                                        Stroke="{Binding ChipColor}"
+                                        StrokeThickness="1"
+                                        Padding="12,8">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenUrgentOrderCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <VerticalStackLayout Spacing="3">
+                                        <Label Text="{Binding CustomerName}"
+                                               FontSize="13" FontFamily="OpenSansSemibold"
+                                               TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                               InputTransparent="True" />
+                                        <HorizontalStackLayout Spacing="6">
+                                            <Border StrokeShape="RoundRectangle 8"
+                                                    BackgroundColor="{Binding ChipColor}"
+                                                    StrokeThickness="0"
+                                                    Padding="6,1"
+                                                    VerticalOptions="Center"
+                                                    InputTransparent="True">
+                                                <Label Text="{Binding ChipLabel}"
+                                                       FontSize="10" FontFamily="OpenSansSemibold"
+                                                       TextColor="White" />
+                                            </Border>
+                                            <Label Text="{Binding OrderNumber}"
+                                                   FontSize="11"
+                                                   TextColor="{StaticResource SubtleText}"
+                                                   VerticalOptions="Center"
+                                                   InputTransparent="True" />
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- ═══════════════ TAG FILTER (DROPDOWN) ═══════════════ -->
+        <!-- Only appears when at least one customer has a Tag. Picker renders as a
+             native ComboBox on WinUI, so we use it directly (no Border wrapper) to
+             avoid duplicated chrome from the native control fighting our container. -->
+        <Grid Grid.Row="4" ColumnDefinitions="Auto,*,Auto"
+              Padding="18,2,18,10" ColumnSpacing="10"
+              IsVisible="{Binding AvailableTags.Count, Converter={StaticResource GreaterThanZeroConverter}}">
+            <Label Grid.Column="0" FontSize="12" FontFamily="OpenSansSemibold"
+                   TextColor="{StaticResource SubtleText}" VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="&#x1F3F7; " />
+                        <Span Text="{Binding L.FilterByTagLabel}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+
+            <!-- No Title here: on WinUI the Picker.Title renders as a permanent
+                 ComboBox Header stacked above the control, which squashes the
+                 selection area. The left-side label is enough. -->
+            <Picker Grid.Column="1"
+                    ItemsSource="{Binding TagFilterOptions}"
+                    SelectedItem="{Binding SelectedTagOption, Mode=TwoWay}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                    TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                    FontSize="14"
+                    HeightRequest="40"
+                    VerticalOptions="Center" />
+
+            <!-- Clear filter (only visible when a tag is active) -->
+            <Border Grid.Column="2"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                    Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                    StrokeThickness="1"
+                    HeightRequest="40" WidthRequest="40"
+                    VerticalOptions="Center"
+                    IsVisible="{Binding ActiveTag, Converter={StaticResource NullToBoolConverter}}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnClearTagFilterTapped" />
+                </Border.GestureRecognizers>
+                <Label Text="&#x2715;" FontSize="13"
+                       TextColor="{StaticResource SubtleText}"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+        </Grid>
+
+        <!-- ═══════════════ SECTION HEADER ═══════════════ -->
+        <Grid Grid.Row="5" ColumnDefinitions="*,Auto" Margin="20,4,20,10">
+            <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="2">
+                <Label Text="{Binding L.RecentLabel}"
+                       FontFamily="OpenSansSemibold"
+                       FontSize="11"
+                       CharacterSpacing="1.4"
+                       TextColor="{StaticResource Gray500}" />
+                <Label FontSize="16" FontFamily="OpenSansSemibold"
+                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{Binding Customers.Count}" TextColor="{StaticResource Primary}" />
+                            <Span Text=" " />
+                            <Span Text="{Binding L.OfLatestCustomers}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </VerticalStackLayout>
+            <Border Grid.Column="1"
+                    StrokeShape="RoundRectangle 20"
+                    BackgroundColor="Transparent"
+                    Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                    StrokeThickness="1"
+                    Padding="14,8" VerticalOptions="Center">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ShowAllCommand}" />
+                </Border.GestureRecognizers>
+                <HorizontalStackLayout Spacing="5" VerticalOptions="Center">
+                    <Label Text="{Binding L.ViewAllLabel}"
+                           FontSize="12" FontFamily="OpenSansSemibold"
+                           TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                    <Label Text="&#x2192;" FontSize="14"
+                           TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- ═══════════════ CUSTOMER LIST ═══════════════ -->
+        <CollectionView Grid.Row="6" ItemsSource="{Binding Customers}" Margin="18,0,18,12">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center"
+                                     Spacing="16" Padding="32,48">
+                    <Image Source="tapemark.svg"
+                           WidthRequest="120" HeightRequest="120"
+                           HorizontalOptions="Center"
+                           Aspect="AspectFit" />
+                    <Label Text="{Binding L.WelcomeTitle}"
+                           FontFamily="OpenSansSemibold" FontSize="22"
+                           TextColor="{StaticResource PrimaryText}"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    <Label Text="{Binding L.WelcomeSubtitle}" FontSize="14"
+                           TextColor="{StaticResource SubtleText}" HorizontalTextAlignment="Center"
+                           LineBreakMode="WordWrap" MaximumWidthRequest="320" />
+                    <Button Text="{Binding L.AddFirstCustomer}"
+                            Command="{Binding AddNewCommand}"
+                            IsVisible="{Binding Auth.CanManageCustomers}"
+                            HorizontalOptions="Center" HeightRequest="50"
+                            WidthRequest="240" CornerRadius="14"
+                            FontAttributes="Bold" FontSize="15" Margin="0,8,0,0" />
+                    <BoxView HeightRequest="1"
+                             BackgroundColor="{StaticResource DividerLine}"
+                             Margin="0,16,0,4" WidthRequest="220" />
+                    <Label Text="{Binding L.TipsTitle}"
+                           FontFamily="OpenSansSemibold" FontSize="13"
+                           TextColor="{StaticResource Primary}" HorizontalOptions="Center" />
+                    <Label Text="{Binding L.TipsContent}" FontSize="13"
+                           TextColor="{StaticResource SubtleText}" HorizontalTextAlignment="Center"
+                           MaximumWidthRequest="320" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Customer">
+                    <!-- No Border.Shadow inside a virtualised item template: it crashes
+                         Microsoft.UI.Xaml.dll on Windows. Depth is faked with a subtle stroke. -->
+                    <Border Margin="0,4" Padding="0"
+                            StrokeShape="RoundRectangle 16"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                            StrokeThickness="1">
+                        <!-- Tap uses code-behind handlers (see CustomerListPage.xaml.cs) instead
+                             of binding to VM commands with RelativeSource/x:Reference: both are
+                             unreliable inside a virtualised CollectionView DataTemplate on WinUI 3
+                             (separate namescope + fragile ancestor lookups). Handlers are attached
+                             at Border AND inner Grid AND info-column layout so every pixel of the
+                             card fires ViewDetail regardless of which visual layer WinUI hit-tests. -->
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCustomerCardTapped" />
+                        </Border.GestureRecognizers>
+
+                        <Grid ColumnDefinitions="4,Auto,*,Auto,Auto" ColumnSpacing="0"
+                              BackgroundColor="#01FFFFFF">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCustomerCardTapped" />
+                            </Grid.GestureRecognizers>
+
+                            <!-- Left accent bar -->
+                            <Border Grid.Column="0" StrokeThickness="0"
+                                    Stroke="Transparent" WidthRequest="4"
+                                    Background="{StaticResource AccentBarGradient}"
+                                    InputTransparent="True" />
+
+                            <!-- Avatar -->
+                            <Border Grid.Column="1"
+                                    StrokeShape="RoundRectangle 22"
+                                    Background="{StaticResource AvatarGradient}"
+                                    WidthRequest="44" HeightRequest="44"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center" Margin="14,14,0,14"
+                                    InputTransparent="True">
+                                <Label FontSize="16" FontFamily="OpenSansSemibold"
+                                       TextColor="{StaticResource Primary}"
+                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                       Text="{Binding Name, Converter={StaticResource InitialsConverter}}" />
+                            </Border>
+
+                            <!-- Info column: own gesture as belt-and-suspenders in case
+                                 WinUI hit-tests the stack layout instead of the outer Grid. -->
+                            <VerticalStackLayout Grid.Column="2" Spacing="5"
+                                                 VerticalOptions="Center"
+                                                 HorizontalOptions="Fill"
+                                                 BackgroundColor="#01FFFFFF"
+                                                 Margin="14,14,0,14">
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnCustomerCardTapped" />
+                                </VerticalStackLayout.GestureRecognizers>
+                                <Label Text="{Binding Name}"
+                                       FontFamily="OpenSansSemibold" FontSize="16"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                                <HorizontalStackLayout Spacing="6">
+                                    <Label Text="&#x1F4DE;" FontSize="11" VerticalOptions="Center" Opacity="0.75" />
+                                    <Label Text="{Binding Phone}" FontSize="13"
+                                           TextColor="{StaticResource SubtleText}" VerticalOptions="Center" />
+                                    <!-- Family / group tag chip - shown only when the customer has a Tag -->
+                                    <Border StrokeShape="RoundRectangle 8"
+                                            BackgroundColor="{StaticResource WarningSoft}"
+                                            StrokeThickness="0"
+                                            Padding="7,2"
+                                            VerticalOptions="Center"
+                                            IsVisible="{Binding Tag, Converter={StaticResource NullToBoolConverter}}">
+                                        <HorizontalStackLayout Spacing="3">
+                                            <Label Text="&#x1F3F7;" FontSize="10" VerticalOptions="Center" />
+                                            <Label Text="{Binding Tag}" FontSize="11"
+                                                   FontFamily="OpenSansSemibold"
+                                                   TextColor="#B45309" VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="6">
+                                    <Border StrokeShape="RoundRectangle 6"
+                                            BackgroundColor="{StaticResource PrimarySoft}"
+                                            StrokeThickness="0" Padding="8,3">
+                                        <Label Text="{Binding OrderNumber}" FontSize="11"
+                                               FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource Primary}" />
+                                    </Border>
+                                    <Label Text="&#x2022;" FontSize="11"
+                                           TextColor="{StaticResource HintText}" VerticalOptions="Center" />
+                                    <Label Text="{Binding Date, StringFormat='{0:dd MMM yyyy}'}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource HintText}" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="6"
+                                                       IsVisible="{Binding DeliveryDate, Converter={StaticResource NullToBoolConverter}}">
+                                    <Label Text="&#x1F69A;" FontSize="11" VerticalOptions="Center" />
+                                    <Label Text="{Binding DeliveryDate, StringFormat='{0:dd MMM yyyy}'}"
+                                           FontSize="12" FontFamily="OpenSansSemibold"
+                                           TextColor="{Binding DeliveryDate, Converter={StaticResource DeliveryDateColorConverter}}"
+                                           VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+
+                            <!-- Delete button - understated outlined pill.
+                                 Own gesture prevents the outer tap from firing on this hit target.
+                                 Only visible to admins (employees can't delete customers). -->
+                            <Border Grid.Column="3"
+                                    StrokeShape="RoundRectangle 14"
+                                    BackgroundColor="#01FFFFFF"
+                                    Stroke="{StaticResource DangerRed}"
+                                    StrokeThickness="1"
+                                    WidthRequest="28" HeightRequest="28"
+                                    VerticalOptions="Center"
+                                    Margin="0,0,10,0"
+                                    IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.Auth.CanDeleteOrders}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnCustomerDeleteTapped" />
+                                </Border.GestureRecognizers>
+                                <Label Text="&#x00D7;" FontSize="16" FontFamily="OpenSansSemibold"
+                                       TextColor="{StaticResource DangerRed}"
+                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                       InputTransparent="True" />
+                            </Border>
+
+                            <!-- Chevron -->
+                            <Label Grid.Column="4" Text="&#x203A;" FontSize="26"
+                                   TextColor="{StaticResource Gray300}"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="End" Margin="0,0,16,0"
+                                   InputTransparent="True" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <ActivityIndicator Grid.Row="6"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           Color="{StaticResource Primary}" />
+
+        <!-- ═══════════════ FLOATING ACTION BUTTON (FAB) ═══════════════ -->
+        <!--
+            Anchored to the bottom-right of the CollectionView row so it hovers
+            over the list without pushing content. Only visible to users who
+            can manage customers — employees see a read-only list and don't
+            need the shortcut. The plus-glyph is rendered as a Label rather
+            than an image so it inherits the OpenSans font and stays crisp at
+            every DPI on WinUI.
+        -->
+        <Border Grid.Row="6"
+                IsVisible="{Binding Auth.CanManageCustomers}"
+                VerticalOptions="End" HorizontalOptions="End"
+                Margin="0,0,24,28"
+                WidthRequest="60" HeightRequest="60"
+                StrokeShape="RoundRectangle 30"
+                BackgroundColor="{StaticResource Primary}"
+                StrokeThickness="0"
+                ZIndex="20">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,6" Radius="16" Opacity="0.28" />
+            </Border.Shadow>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding AddNewCommand}" />
+            </Border.GestureRecognizers>
+            <Label Text="+"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="32"
+                   TextColor="White"
+                   HorizontalOptions="Center" VerticalOptions="Center"
+                   InputTransparent="True" />
+        </Border>
+
+        <!-- ═══════════════ UNDO SNACKBAR ═══════════════ -->
+        <Border Grid.Row="6"
+                IsVisible="{Binding ShowUndoBanner}"
+                VerticalOptions="End" HorizontalOptions="Center"
+                Margin="16,0,16,20"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{StaticResource Gray900}"
+                Stroke="Transparent" StrokeThickness="0"
+                Padding="18,12" ZIndex="10">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,6" Radius="20" Opacity="0.35" />
+            </Border.Shadow>
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                <Label Grid.Column="0" Text="&#x1F5D1;"
+                       FontSize="16" VerticalOptions="Center" />
+                <Label Grid.Column="1"
+                       Text="{Binding UndoMessage}"
+                       TextColor="White" FontSize="14"
+                       VerticalOptions="Center" />
+                <Button Grid.Column="2"
+                        Text="{Binding L.UndoLabel}"
+                        Command="{Binding UndoDeleteCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource PrimaryLight}"
+                        FontFamily="OpenSansSemibold" FontSize="13"
+                        Padding="10,0" HeightRequest="36" CornerRadius="8" />
+            </Grid>
+        </Border>
+
+    </Grid>
+</ContentPage>

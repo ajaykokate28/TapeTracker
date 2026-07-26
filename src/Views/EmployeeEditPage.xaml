@@ -1,0 +1,277 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             x:Class="TapeTracker.Views.EmployeeEditPage"
+             x:DataType="vm:EmployeeEditViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.Resources>
+        <Style x:Key="FieldWrap" TargetType="Border">
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Padding" Value="10,0" />
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontFamily" Value="OpenSansSemibold" />
+            <Setter Property="CharacterSpacing" Value="0.6" />
+            <Setter Property="TextColor" Value="{StaticResource Gray500}" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,40">
+
+            <!-- ═══════════════ HEADER ═══════════════ -->
+            <Border StrokeThickness="0" Padding="20,28,20,40">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4F46E5" Offset="0.0" />
+                        <GradientStop Color="#6D28D9" Offset="0.55" />
+                        <GradientStop Color="#DB2777" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                    <Border Grid.Column="0"
+                            WidthRequest="52" HeightRequest="52"
+                            StrokeShape="RoundRectangle 26"
+                            BackgroundColor="#33FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            VerticalOptions="Center">
+                        <Label Text="&#x1F464;" FontSize="24"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="{Binding Title}"
+                               FontFamily="OpenSansSemibold" FontSize="20"
+                               TextColor="White" />
+                        <Label Text="{Binding L.EmployeeSectionLabel}"
+                               FontSize="11" TextColor="#E0E7FF"
+                               CharacterSpacing="1.4" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- ═══════════════ PROFILE CARD ═══════════════ -->
+            <Border Margin="16,-24,16,0"
+                    StrokeShape="RoundRectangle 16"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                    Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                    Padding="18,18"
+                    IsVisible="{Binding AreProfileFieldsVisible}">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,6" Radius="18" Opacity="0.06" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="14">
+
+                    <!-- Username (create only) -->
+                    <VerticalStackLayout Spacing="6" IsVisible="{Binding IsUsernameEditable}">
+                        <Label Text="{Binding L.UsernameLabel}" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldWrap}">
+                            <Entry Text="{Binding Username}"
+                                   Placeholder="{Binding L.UsernamePh}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Username (edit, read-only display) -->
+                    <VerticalStackLayout Spacing="6" IsVisible="{Binding IsUsernameEditable, Converter={StaticResource InvertedBoolConverter}}">
+                        <Label Text="{Binding L.UsernameLabel}" Style="{StaticResource FieldLabel}" />
+                        <Border StrokeShape="RoundRectangle 10"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource ElevatedSurfaceDark}}"
+                                Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                StrokeThickness="1" Padding="12,10">
+                            <Label Text="{Binding Username}" FontSize="14"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Display name -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{Binding L.DisplayNameLabel}" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldWrap}">
+                            <Entry Text="{Binding DisplayName}"
+                                   Placeholder="{Binding L.DisplayNamePh}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Role switch (Admin / Employee) -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="{Binding L.PermissionsSectionLabel}" Style="{StaticResource FieldLabel}" />
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <!--  Custom pill toggle (the native WinUI Switch has almost
+                                  no contrast in its OFF state). Border = track, Ellipse =
+                                  thumb; thumb slides right via TranslationX when ON.  -->
+                            <Border Grid.Column="0"
+                                    StrokeShape="RoundRectangle 14"
+                                    HeightRequest="28" WidthRequest="52" Padding="3"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center" HorizontalOptions="Start"
+                                    BackgroundColor="{Binding IsAdminRole, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#CBD5E1'}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding ToggleRoleCommand}" />
+                                </Border.GestureRecognizers>
+                                <Ellipse Fill="White"
+                                         WidthRequest="22" HeightRequest="22"
+                                         HorizontalOptions="Start" VerticalOptions="Center">
+                                    <Ellipse.Triggers>
+                                        <DataTrigger TargetType="Ellipse"
+                                                     Binding="{Binding IsAdminRole}" Value="True">
+                                            <Setter Property="TranslationX" Value="24" />
+                                        </DataTrigger>
+                                    </Ellipse.Triggers>
+                                </Ellipse>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <!-- Admin label + hint when toggle is ON -->
+                                <VerticalStackLayout Spacing="2" IsVisible="{Binding IsAdminRole}">
+                                    <Label Text="{Binding L.AdminRoleLabel}"
+                                           FontFamily="OpenSansSemibold" FontSize="14"
+                                           TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                                    <Label Text="{Binding L.PermissionAdminHint}"
+                                           FontSize="12" TextColor="{StaticResource SubtleText}"
+                                           LineBreakMode="WordWrap" />
+                                </VerticalStackLayout>
+                                <!-- Employee label + hint when toggle is OFF -->
+                                <VerticalStackLayout Spacing="2"
+                                                     IsVisible="{Binding IsAdminRole, Converter={StaticResource InvertedBoolConverter}}">
+                                    <Label Text="{Binding L.EmployeeRoleLabel}"
+                                           FontFamily="OpenSansSemibold" FontSize="14"
+                                           TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                                    <Label Text="{Binding L.PermissionEmployeeHint}"
+                                           FontSize="12" TextColor="{StaticResource SubtleText}"
+                                           LineBreakMode="WordWrap" />
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <!-- Active switch (edit only) -->
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12"
+                          IsVisible="{Binding IsEditMode}">
+                        <Border Grid.Column="0"
+                                StrokeShape="RoundRectangle 14"
+                                HeightRequest="28" WidthRequest="52" Padding="3"
+                                StrokeThickness="0"
+                                VerticalOptions="Center" HorizontalOptions="Start"
+                                BackgroundColor="{Binding IsActive, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#059669|#CBD5E1'}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ToggleActiveCommand}" />
+                            </Border.GestureRecognizers>
+                            <Ellipse Fill="White"
+                                     WidthRequest="22" HeightRequest="22"
+                                     HorizontalOptions="Start" VerticalOptions="Center">
+                                <Ellipse.Triggers>
+                                    <DataTrigger TargetType="Ellipse"
+                                                 Binding="{Binding IsActive}" Value="True">
+                                        <Setter Property="TranslationX" Value="24" />
+                                    </DataTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label FontFamily="OpenSansSemibold" FontSize="14"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsActive}" Value="True">
+                                        <Setter Property="Text" Value="{Binding L.ActiveLabel}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsActive}" Value="False">
+                                        <Setter Property="Text" Value="{Binding L.InactiveLabel}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Label Text="{Binding L.ConfirmDeactivateMsg}"
+                                   FontSize="12" TextColor="{StaticResource SubtleText}"
+                                   LineBreakMode="WordWrap"
+                                   IsVisible="{Binding IsActive, Converter={StaticResource InvertedBoolConverter}}" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══════════════ PASSWORD CARD ═══════════════ -->
+            <Border Margin="16,14,16,0"
+                    StrokeShape="RoundRectangle 16"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                    Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                    Padding="18,18"
+                    IsVisible="{Binding ArePasswordFieldsVisible}">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,6" Radius="18" Opacity="0.06" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="14">
+                    <!-- Password label switches between "Password" (create) and "New Password" (reset). -->
+                    <Label Style="{StaticResource FieldLabel}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsPasswordResetMode}" Value="True">
+                                <Setter Property="Text" Value="{Binding L.NewPasswordLabel}" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsPasswordResetMode}" Value="False">
+                                <Setter Property="Text" Value="{Binding L.PasswordLabel}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                    <Border Style="{StaticResource FieldWrap}">
+                        <Entry Text="{Binding Password}"
+                               Placeholder="{Binding L.PasswordPh}"
+                               IsPassword="True" />
+                    </Border>
+
+                    <Label Text="{Binding L.ConfirmPasswordLabel}" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldWrap}">
+                        <Entry Text="{Binding ConfirmPassword}"
+                               IsPassword="True" />
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Error banner -->
+            <Border IsVisible="{Binding HasError}"
+                    Margin="16,14,16,0"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="{StaticResource DangerSoft}"
+                    Stroke="{StaticResource DangerRed}" StrokeThickness="1"
+                    Padding="12,10">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="&#x26A0;" FontSize="14"
+                           TextColor="{StaticResource DangerRed}" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="{Binding ErrorMessage}"
+                           FontSize="12" TextColor="{StaticResource DangerRed}"
+                           VerticalOptions="Center" LineBreakMode="WordWrap" />
+                </Grid>
+            </Border>
+
+            <!-- ═══════════════ ACTION BUTTONS ═══════════════ -->
+            <Grid Margin="16,18,16,0"
+                  ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0"
+                        Text="{Binding L.CancelLabel}"
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource Primary}"
+                        BorderColor="{StaticResource Primary}"
+                        BorderWidth="1"
+                        HeightRequest="50" CornerRadius="12"
+                        FontFamily="OpenSansSemibold" FontSize="15" />
+                <Button Grid.Column="1"
+                        Text="{Binding L.SaveButtonLabel}"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="{Binding IsNotBusy}"
+                        HeightRequest="50" CornerRadius="12"
+                        FontFamily="OpenSansSemibold" FontSize="15" />
+            </Grid>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="{StaticResource Primary}"
+                               HorizontalOptions="Center" Margin="0,14,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

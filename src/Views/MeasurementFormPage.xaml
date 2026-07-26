@@ -1,0 +1,929 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             xmlns:models="clr-namespace:TapeTracker.Models"
+             x:Class="TapeTracker.Views.MeasurementFormPage"
+             x:Name="RootPage"
+             x:DataType="vm:MeasurementFormViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.Resources>
+        <!-- Reusable field-wrapping border for entries -->
+        <Style x:Key="FieldWrap" TargetType="Border">
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Padding" Value="8,0" />
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontFamily" Value="OpenSansSemibold" />
+            <Setter Property="CharacterSpacing" Value="0.6" />
+            <Setter Property="TextColor" Value="{StaticResource Gray500}" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView x:Name="RootScroll">
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,32">
+
+            <!-- ═══════════════ PAGE HEADER ═══════════════ -->
+            <Border StrokeThickness="0" Padding="20,20,20,26">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4F46E5" Offset="0.0" />
+                        <GradientStop Color="#6D28D9" Offset="0.55" />
+                        <GradientStop Color="#DB2777" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
+                        <Label Text="{Binding L.MeasurementHeader}" Style="{StaticResource SectionTitle}" TextColor="#C7D2FE" />
+                        <Label Text="{Binding Title}"
+                               FontFamily="OpenSansSemibold" FontSize="20"
+                               TextColor="White" />
+                    </VerticalStackLayout>
+                    <!-- Unit toggle pill -->
+                    <Border Grid.Column="1"
+                            StrokeShape="RoundRectangle 20"
+                            BackgroundColor="#26FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            Padding="14,8" VerticalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleUnitCommand}" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="6">
+                            <Label Text="&#x21C5;" FontSize="13" FontFamily="OpenSansSemibold"
+                                   TextColor="White" VerticalOptions="Center" />
+                            <Label Text="{Binding UnitLabel}" FontSize="13" FontFamily="OpenSansSemibold"
+                                   TextColor="White" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <VerticalStackLayout Padding="16,-14,16,0" Spacing="14">
+
+                <!-- ═══════════════ STEP 1 — CUSTOMER INFO ═══════════════ -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                        StrokeThickness="1" Padding="0">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.05" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="0">
+                        <!-- Step header -->
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="18,16">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ToggleStep1Command}" />
+                            </Grid.GestureRecognizers>
+                            <Border Grid.Column="0"
+                                    WidthRequest="32" HeightRequest="32"
+                                    StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="{StaticResource Primary}"
+                                    StrokeThickness="0" VerticalOptions="Center">
+                                <Label Text="1" FontFamily="OpenSansSemibold" FontSize="14"
+                                       TextColor="White"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                <Label Text="{Binding L.Step1Label}" Style="{StaticResource SectionTitle}" />
+                                <Label Text="{Binding L.CustomerInfoLabel}"
+                                       FontFamily="OpenSansSemibold" FontSize="15"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="&#x25BC;" FontSize="12"
+                                   TextColor="{StaticResource Primary}" VerticalOptions="Center"
+                                   IsVisible="{Binding IsStep1Expanded}" />
+                            <Label Grid.Column="2" Text="&#x25B6;" FontSize="12"
+                                   TextColor="{StaticResource Primary}" VerticalOptions="Center"
+                                   IsVisible="{Binding IsStep1Expanded, Converter={StaticResource InvertedBoolConverter}}" />
+                        </Grid>
+
+                        <VerticalStackLayout IsVisible="{Binding IsStep1Expanded}" Spacing="0">
+                            <BoxView HeightRequest="1"
+                                     BackgroundColor="{StaticResource DividerLine}" Margin="18,0" />
+                            <VerticalStackLayout Padding="18,16" Spacing="14">
+
+                                <VerticalStackLayout Spacing="6">
+                                    <Label Text="{Binding L.FullNameLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}">
+                                        <Entry Text="{Binding CustomerName}" Placeholder="{Binding L.FullNamePlaceholder}" ReturnType="Next" />
+                                    </Border>
+
+                                    <!-- Existing-customer autocomplete: appears while typing a new
+                                         customer name so the user can pick an existing record
+                                         instead of accidentally creating a duplicate. Hidden in
+                                         edit mode via ShowCustomerNameSuggestions. -->
+                                    <Border StrokeShape="RoundRectangle 10"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                                            Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                            StrokeThickness="1"
+                                            Padding="4"
+                                            IsVisible="{Binding ShowCustomerNameSuggestions}">
+                                        <VerticalStackLayout Spacing="0">
+                                            <Label Text="{Binding L.DidYouMeanExistingLabel}"
+                                                   FontSize="11" TextColor="{StaticResource HintText}"
+                                                   Padding="10,6,10,4" />
+                                            <ScrollView MaximumHeightRequest="180"
+                                                        VerticalScrollBarVisibility="Default">
+                                                <VerticalStackLayout Spacing="0"
+                                                                     BindableLayout.ItemsSource="{Binding CustomerNameSuggestions}">
+                                                    <BindableLayout.ItemTemplate>
+                                                        <DataTemplate x:DataType="models:Customer">
+                                                            <Grid Padding="10,8" ColumnDefinitions="*,Auto" BackgroundColor="#01FFFFFF">
+                                                                <Grid.GestureRecognizers>
+                                                                    <TapGestureRecognizer
+                                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickExistingCustomerCommand}"
+                                                                        CommandParameter="{Binding .}" />
+                                                                </Grid.GestureRecognizers>
+                                                                <Label Grid.Column="0"
+                                                                       Text="{Binding Name}" FontSize="13"
+                                                                       FontFamily="OpenSansSemibold"
+                                                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                                                       VerticalOptions="Center" />
+                                                                <Label Grid.Column="1"
+                                                                       Text="{Binding Phone}" FontSize="12"
+                                                                       TextColor="{StaticResource SubtleText}"
+                                                                       VerticalOptions="Center" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </BindableLayout.ItemTemplate>
+                                                </VerticalStackLayout>
+                                            </ScrollView>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Spacing="6">
+                                    <Label Text="{Binding L.PhoneLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}">
+                                        <Entry Text="{Binding Phone}" Placeholder="{Binding L.PhonePlaceholder}"
+                                               Keyboard="Telephone" ReturnType="Next" />
+                                    </Border>
+                                </VerticalStackLayout>
+
+                                <!-- Family / Group Tag: free text entry with one-tap suggestions -->
+                                <VerticalStackLayout Spacing="6">
+                                    <Label Style="{StaticResource FieldLabel}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding L.FamilyGroupTagLabel}" />
+                                                <Span Text="  " />
+                                                <Span Text="{Binding L.OptionalLabel}" TextColor="{StaticResource HintText}" FontAttributes="None" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Border Style="{StaticResource FieldWrap}">
+                                        <Entry Text="{Binding Tag}"
+                                               Placeholder="{Binding L.FamilyGroupTagPh}"
+                                               ReturnType="Next" />
+                                    </Border>
+
+                                    <!-- Autocomplete popup: appears while typing when at least
+                                         one existing tag partially matches the current text.
+                                         Uses a capped-height, scrollable list so it stays compact
+                                         even if hundreds of tags match. -->
+                                    <Border StrokeShape="RoundRectangle 10"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                                            Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                            StrokeThickness="1"
+                                            Padding="4"
+                                            IsVisible="{Binding ShowTagSuggestions}">
+                                        <ScrollView MaximumHeightRequest="180"
+                                                    VerticalScrollBarVisibility="Default">
+                                            <VerticalStackLayout Spacing="0"
+                                                                 BindableLayout.ItemsSource="{Binding FilteredTagSuggestions}">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="sys:String">
+                                                        <Grid Padding="10,8" BackgroundColor="#01FFFFFF">
+                                                            <Grid.GestureRecognizers>
+                                                                <TapGestureRecognizer
+                                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ApplyTagCommand}"
+                                                                    CommandParameter="{Binding .}" />
+                                                            </Grid.GestureRecognizers>
+                                                            <Label Text="{Binding .}" FontSize="13"
+                                                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                                                   VerticalOptions="Center" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </VerticalStackLayout>
+                                        </ScrollView>
+                                    </Border>
+                                </VerticalStackLayout>
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="6">
+                                        <Label Text="{Binding L.OrderNoLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <Entry Grid.Column="0" Text="{Binding OrderNumber}"
+                                                       Placeholder="{Binding L.OrderNoPlaceholder}" ReturnType="Next" />
+                                                <Button Grid.Column="1" Text="&#x2728;"
+                                                        Command="{Binding GenerateOrderNumberCommand}"
+                                                        FontSize="14" Padding="6,0" MinimumWidthRequest="32"
+                                                        BackgroundColor="Transparent"
+                                                        TextColor="{StaticResource Primary}"
+                                                        ToolTipProperties.Text="Auto-generate order number" />
+                                            </Grid>
+                                        </Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="6">
+                                        <Label Text="{Binding L.OrderDateLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}" Padding="8,4">
+                                            <DatePicker Date="{Binding Date}" />
+                                        </Border>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding HasDueDate}"
+                                              Color="{StaticResource Primary}" VerticalOptions="Center" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="6">
+                                        <Label Style="{StaticResource FieldLabel}">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="{Binding L.DeliveryDateLabel}" />
+                                                    <Span Text="  " />
+                                                    <Span Text="{Binding L.DeliveryOptional}"
+                                                          TextColor="{StaticResource HintText}" FontAttributes="None" />
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                        <Border Style="{StaticResource FieldWrap}" Padding="8,4"
+                                                IsVisible="{Binding HasDueDate}">
+                                            <DatePicker Date="{Binding DueDate}" MinimumDate="{Binding Date}" />
+                                        </Border>
+                                        <Label Text="{Binding L.TickDeliveryHint}" FontSize="11"
+                                               TextColor="{StaticResource HintText}"
+                                               IsVisible="{Binding HasDueDate, Converter={StaticResource InvertedBoolConverter}}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <!-- Rush flag: prominent red-tinted row so it doesn't
+                                     hide inside the "advanced options" section. -->
+                                <Border StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="#15EF4444"
+                                        Stroke="#40EF4444" StrokeThickness="1"
+                                        Padding="12,10">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsRush}"
+                                                  Color="#DC2626" VerticalOptions="Center" />
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                            <Label Style="{StaticResource FieldLabel}">
+                                                <Label.FormattedText>
+                                                    <FormattedString>
+                                                        <Span Text="&#x1F6A9;  " FontSize="14" TextColor="#DC2626" />
+                                                        <Span Text="{Binding L.MarkAsRushLabel}" TextColor="#B91C1C" FontAttributes="Bold" />
+                                                    </FormattedString>
+                                                </Label.FormattedText>
+                                            </Label>
+                                            <Label Text="{Binding L.RushHint}" FontSize="11"
+                                                   TextColor="{StaticResource HintText}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Border>
+
+                                <Label Text="{Binding L.RequiredFieldsNote}" FontSize="11"
+                                       TextColor="{StaticResource HintText}" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ STEP 2 — SHIRT ═══════════════ -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                        StrokeThickness="1" Padding="0">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.05" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="18,16">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ToggleStep2Command}" />
+                            </Grid.GestureRecognizers>
+                            <Border Grid.Column="0"
+                                    WidthRequest="32" HeightRequest="32"
+                                    StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="{StaticResource Primary}"
+                                    StrokeThickness="0" VerticalOptions="Center">
+                                <Label Text="2" FontFamily="OpenSansSemibold" FontSize="14"
+                                       TextColor="White"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                <Label Text="{Binding L.Step2Label}" Style="{StaticResource SectionTitle}" />
+                                <Label FontFamily="OpenSansSemibold" FontSize="15"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding L.ShirtLabel}" />
+                                            <Span Text="  · " TextColor="{StaticResource SubtleText}" />
+                                            <Span Text="{Binding UnitLabel}" TextColor="{StaticResource SubtleText}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="&#x25BC;" FontSize="12"
+                                   TextColor="{StaticResource Primary}" VerticalOptions="Center"
+                                   IsVisible="{Binding IsStep2Expanded}" />
+                            <Label Grid.Column="2" Text="&#x25B6;" FontSize="12"
+                                   TextColor="{StaticResource Primary}" VerticalOptions="Center"
+                                   IsVisible="{Binding IsStep2Expanded, Converter={StaticResource InvertedBoolConverter}}" />
+                        </Grid>
+
+                        <VerticalStackLayout IsVisible="{Binding IsStep2Expanded}" Spacing="0">
+                            <BoxView HeightRequest="1"
+                                     BackgroundColor="{StaticResource DividerLine}" Margin="18,0" />
+                            <VerticalStackLayout Padding="18,16" Spacing="12">
+                                <Label Text="{Binding L.ShirtHint}" FontSize="11"
+                                       TextColor="{StaticResource HintText}"
+                                       LineBreakMode="WordWrap" />
+
+                                <!--
+                                    Speak-to-fill pill: opens the Windows
+                                    speech-recognition dialog and drops parsed
+                                    values into the shirt fields below. Hidden
+                                    on platforms without a working STT service
+                                    (mobile MAUI targets that we haven't wired
+                                    up yet) so users don't see a dead affordance.
+                                -->
+                                <Border StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="#0EA5E9"
+                                        StrokeThickness="0"
+                                        Padding="14,10"
+                                        IsVisible="{Binding IsVoiceSupported}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding DictateShirtCommand}" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                                        <Label Text="&#x1F3A4;" FontSize="15"
+                                               VerticalOptions="Center" InputTransparent="True" />
+                                        <Label Text="{Binding L.SpeakLabel}"
+                                               FontFamily="OpenSansSemibold" FontSize="13"
+                                               TextColor="White" VerticalOptions="Center"
+                                               InputTransparent="True" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <!-- Copy-from-last-order pill: appears only for customers with
+                                     a prior order. One tap fills every shirt + pant measurement
+                                     from that order — the "same again" flow. -->
+                                <Border StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{StaticResource PrimarySoft}"
+                                        StrokeThickness="0"
+                                        Padding="14,10"
+                                        IsVisible="{Binding HasPriorOrder}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding CopyFromLastOrderCommand}" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                                        <Label Text="&#x21BB;" FontSize="15" FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                        <Label Text="{Binding L.CopyFromLastOrderLabel}"
+                                               FontFamily="OpenSansSemibold" FontSize="13"
+                                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto"
+                                      RowSpacing="12" ColumnSpacing="12">
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6">
+                                        <Label Text="{Binding L.LengthLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtLength}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="6">
+                                        <Label Text="{Binding L.ChestLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtChest}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="6">
+                                        <Label Text="{Binding L.WaistLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtWaist}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="6">
+                                        <Label Text="{Binding L.HipLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtHip}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="2" Grid.Column="0" Spacing="6">
+                                        <Label Text="{Binding L.ShoulderLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtShoulder}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="6">
+                                        <Label Text="{Binding L.SleeveLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtSleeve}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <!-- Advanced fields (rarely used): shown only when ShowAdvancedFields is true. -->
+                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto"
+                                      RowSpacing="12" ColumnSpacing="12"
+                                      IsVisible="{Binding ShowAdvancedFields}">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="6">
+                                        <Label Text="{Binding L.CuffLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtCuff}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="6">
+                                        <Label Text="{Binding L.CollarLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtCollar}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <Label Text="{Binding L.ShirtTip}" FontSize="11" TextColor="{StaticResource HintText}" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ STEP 3 — PANT ═══════════════ -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                        StrokeThickness="1" Padding="0">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.05" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="18,16">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ToggleStep3Command}" />
+                            </Grid.GestureRecognizers>
+                            <Border Grid.Column="0"
+                                    WidthRequest="32" HeightRequest="32"
+                                    StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="{StaticResource Tertiary}"
+                                    StrokeThickness="0" VerticalOptions="Center">
+                                <Label Text="3" FontFamily="OpenSansSemibold" FontSize="14"
+                                       TextColor="White"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                <Label Text="{Binding L.Step3Label}" Style="{StaticResource SectionTitle}" />
+                                <Label FontFamily="OpenSansSemibold" FontSize="15"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding L.PantLabel}" />
+                                            <Span Text="  · " TextColor="{StaticResource SubtleText}" />
+                                            <Span Text="{Binding UnitLabel}" TextColor="{StaticResource SubtleText}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="&#x25BC;" FontSize="12"
+                                   TextColor="{StaticResource Tertiary}" VerticalOptions="Center"
+                                   IsVisible="{Binding IsStep3Expanded}" />
+                            <Label Grid.Column="2" Text="&#x25B6;" FontSize="12"
+                                   TextColor="{StaticResource Tertiary}" VerticalOptions="Center"
+                                   IsVisible="{Binding IsStep3Expanded, Converter={StaticResource InvertedBoolConverter}}" />
+                        </Grid>
+
+                        <VerticalStackLayout IsVisible="{Binding IsStep3Expanded}" Spacing="0">
+                            <BoxView HeightRequest="1"
+                                     BackgroundColor="{StaticResource DividerLine}" Margin="18,0" />
+                            <VerticalStackLayout Padding="18,16" Spacing="12">
+                                <Label Text="{Binding L.PantHint}" FontSize="11"
+                                       TextColor="{StaticResource HintText}"
+                                       LineBreakMode="WordWrap" />
+
+                                <!-- Speak-to-fill pill for the pant section; mirrors the shirt one. -->
+                                <Border StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="#0EA5E9"
+                                        StrokeThickness="0"
+                                        Padding="14,10"
+                                        IsVisible="{Binding IsVoiceSupported}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding DictatePantCommand}" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                                        <Label Text="&#x1F3A4;" FontSize="15"
+                                               VerticalOptions="Center" InputTransparent="True" />
+                                        <Label Text="{Binding L.SpeakLabel}"
+                                               FontFamily="OpenSansSemibold" FontSize="13"
+                                               TextColor="White" VerticalOptions="Center"
+                                               InputTransparent="True" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                                      RowSpacing="12" ColumnSpacing="12">
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6">
+                                        <Label Text="{Binding L.LengthLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantLength}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="6">
+                                        <Label Text="{Binding L.WaistLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantWaist}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="6">
+                                        <Label Text="{Binding L.HipLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantHip}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="6">
+                                        <Label Text="{Binding L.ThighLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantThigh}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <!-- Advanced pant fields (Ankle, Knee, Seat): only when toggled on. -->
+                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                                      RowSpacing="12" ColumnSpacing="12"
+                                      IsVisible="{Binding ShowAdvancedFields}">
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6">
+                                        <Label Text="{Binding L.AnkleLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantAnkle}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="6">
+                                        <Label Text="{Binding L.KneeLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantKnee}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="6">
+                                        <Label Text="{Binding L.SeatLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantSeat}" Placeholder="0.0" Keyboard="Numeric" /></Border>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <!-- Show more / fewer fields toggle: single button controls
+                                     both Shirt and Pant advanced blocks (Cuff/Collar/Ankle/
+                                     Knee/Seat). Sits at the end of the Pant step because it's
+                                     the last visible measurement card. -->
+                                <Border StrokeShape="RoundRectangle 20"
+                                        BackgroundColor="Transparent"
+                                        Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                        StrokeThickness="1"
+                                        Padding="14,8"
+                                        HorizontalOptions="Center"
+                                        Margin="0,6,0,0">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ToggleAdvancedFieldsCommand}" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="6">
+                                        <Label Text="{Binding L.ShowAdvancedFieldsLabel}" FontSize="12"
+                                               FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource Primary}"
+                                               VerticalOptions="Center"
+                                               IsVisible="{Binding ShowAdvancedFields, Converter={StaticResource InvertedBoolConverter}}" />
+                                        <Label Text="{Binding L.HideAdvancedFieldsLabel}" FontSize="12"
+                                               FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource Primary}"
+                                               VerticalOptions="Center"
+                                               IsVisible="{Binding ShowAdvancedFields}" />
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ STEP 4 — NOTES ═══════════════ -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                        StrokeThickness="1" Padding="0">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.05" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="18,16">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ToggleStep4Command}" />
+                            </Grid.GestureRecognizers>
+                            <Border Grid.Column="0"
+                                    WidthRequest="32" HeightRequest="32"
+                                    StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="{StaticResource Primary}"
+                                    StrokeThickness="0" VerticalOptions="Center">
+                                <Label Text="4" FontFamily="OpenSansSemibold" FontSize="14"
+                                       TextColor="White"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                <Label Text="{Binding L.Step4Label}" Style="{StaticResource SectionTitle}" />
+                                <Label Text="{Binding L.NotesLabel}"
+                                       FontFamily="OpenSansSemibold" FontSize="15"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="&#x25BC;" FontSize="12"
+                                   TextColor="{StaticResource Primary}" VerticalOptions="Center"
+                                   IsVisible="{Binding IsStep4Expanded}" />
+                            <Label Grid.Column="2" Text="&#x25B6;" FontSize="12"
+                                   TextColor="{StaticResource Primary}" VerticalOptions="Center"
+                                   IsVisible="{Binding IsStep4Expanded, Converter={StaticResource InvertedBoolConverter}}" />
+                        </Grid>
+
+                        <VerticalStackLayout IsVisible="{Binding IsStep4Expanded}" Spacing="0">
+                            <BoxView HeightRequest="1"
+                                     BackgroundColor="{StaticResource DividerLine}" Margin="18,0" />
+                            <VerticalStackLayout Padding="18,16" Spacing="10">
+                                <Label Text="{Binding L.NotesHint}"
+                                       FontSize="11" TextColor="{StaticResource HintText}"
+                                       LineBreakMode="WordWrap" />
+                                <Border StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                                        Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                        StrokeThickness="1" Padding="10,6">
+                                    <Editor Text="{Binding Notes}"
+                                            Placeholder="{Binding L.NotesPlaceholder}"
+                                            AutoSize="TextChanges"
+                                            MinimumHeightRequest="96"
+                                            MaximumHeightRequest="220"
+                                            BackgroundColor="Transparent" />
+                                </Border>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ STEP 5 — PRICING & PAYMENT ═══════════════ -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                        StrokeThickness="1" Padding="0">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.05" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="18,16">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ToggleStep5Command}" />
+                            </Grid.GestureRecognizers>
+                            <Border Grid.Column="0"
+                                    WidthRequest="32" HeightRequest="32"
+                                    StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="#10B981"
+                                    StrokeThickness="0" VerticalOptions="Center">
+                                <Label Text="&#x20B9;" FontFamily="OpenSansSemibold" FontSize="16"
+                                       TextColor="White"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                <Label Text="{Binding L.PricingSection}" Style="{StaticResource SectionTitle}" />
+                                <Label FontFamily="OpenSansSemibold" FontSize="15"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding L.GrandTotalLabel}" />
+                                            <Span Text="  · " TextColor="{StaticResource SubtleText}" />
+                                            <Span Text="{Binding GrandTotalDisplay}" TextColor="{StaticResource SubtleText}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" Text="&#x25BC;" FontSize="12"
+                                   TextColor="{StaticResource Primary}" VerticalOptions="Center"
+                                   IsVisible="{Binding IsStep5Expanded}" />
+                            <Label Grid.Column="2" Text="&#x25B6;" FontSize="12"
+                                   TextColor="{StaticResource Primary}" VerticalOptions="Center"
+                                   IsVisible="{Binding IsStep5Expanded, Converter={StaticResource InvertedBoolConverter}}" />
+                        </Grid>
+
+                        <VerticalStackLayout IsVisible="{Binding IsStep5Expanded}" Spacing="0">
+                            <BoxView HeightRequest="1"
+                                     BackgroundColor="{StaticResource DividerLine}" Margin="18,0" />
+                            <VerticalStackLayout Padding="18,16" Spacing="14">
+
+                                <!-- ── LINE ITEMS EDITOR (Phase 9) ── -->
+                                <VerticalStackLayout Spacing="8">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <Label Grid.Column="0" Text="{Binding L.LineItemsSection}"
+                                               Style="{StaticResource FieldLabel}"
+                                               VerticalOptions="Center" />
+                                        <Border Grid.Column="1"
+                                                StrokeShape="RoundRectangle 10"
+                                                BackgroundColor="{StaticResource PrimarySoft}"
+                                                StrokeThickness="0"
+                                                Padding="12,6">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding AddLineItemCommand}" />
+                                            </Border.GestureRecognizers>
+                                            <Label Text="{Binding L.AddLineItemLabel}"
+                                                   FontSize="12" FontFamily="OpenSansSemibold"
+                                                   TextColor="{StaticResource Primary}" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Empty-state hint when there are no rows yet. -->
+                                    <Border StrokeShape="RoundRectangle 10"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                                            Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                            StrokeThickness="1" Padding="14,16"
+                                            IsVisible="{Binding HasLineItems, Converter={StaticResource InvertedBoolConverter}}">
+                                        <Label Text="{Binding L.NoLineItemsLabel}"
+                                               FontSize="12" TextColor="{StaticResource HintText}"
+                                               HorizontalOptions="Center" />
+                                    </Border>
+
+                                    <!-- One card per line item. BindableLayout instead of a
+                                         CollectionView because we don't need virtualisation
+                                         (typical order = 1-5 rows) and CollectionView inside
+                                         a ScrollView misbehaves on WinUI 3. -->
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding LineItems}"
+                                                         Spacing="8">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:LineItemRow">
+                                                <Border StrokeShape="RoundRectangle 10"
+                                                        BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                                                        Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                                        StrokeThickness="1" Padding="10,8">
+                                                    <VerticalStackLayout Spacing="6">
+                                                        <!-- Row 1: For + Item (side-by-side).
+                                                             Each Entry is paired with a tiny "▾" pick chip.
+                                                             The chip is hidden when the suggestion source
+                                                             is empty (no family / no catalog) so the row
+                                                             stays clean for solo customers or fresh shops. -->
+                                                        <Grid ColumnDefinitions="*,Auto,2*,Auto" ColumnSpacing="4">
+                                                            <Entry Grid.Column="0"
+                                                                   Text="{Binding ForWhom}"
+                                                                   Placeholder="{Binding Source={x:Reference RootPage}, Path=BindingContext.L.LineItemForPlaceholder}" />
+                                                            <Border Grid.Column="1"
+                                                                    IsVisible="{Binding Source={x:Reference RootPage}, Path=BindingContext.HasFamilySuggestions}"
+                                                                    StrokeShape="RoundRectangle 8"
+                                                                    BackgroundColor="{StaticResource PrimarySoft}"
+                                                                    StrokeThickness="0"
+                                                                    Padding="8,6"
+                                                                    VerticalOptions="Center">
+                                                                <Border.GestureRecognizers>
+                                                                    <TapGestureRecognizer
+                                                                        Command="{Binding Source={x:Reference RootPage}, Path=BindingContext.PickForWhomCommand}"
+                                                                        CommandParameter="{Binding .}" />
+                                                                </Border.GestureRecognizers>
+                                                                <Label Text="&#x1F465;" FontSize="12"
+                                                                       TextColor="{StaticResource Primary}" />
+                                                            </Border>
+                                                            <Entry Grid.Column="2"
+                                                                   Text="{Binding Description}"
+                                                                   Placeholder="{Binding Source={x:Reference RootPage}, Path=BindingContext.L.LineItemDescPlaceholder}" />
+                                                            <Border Grid.Column="3"
+                                                                    IsVisible="{Binding Source={x:Reference RootPage}, Path=BindingContext.HasItemCatalog}"
+                                                                    StrokeShape="RoundRectangle 8"
+                                                                    BackgroundColor="{StaticResource PrimarySoft}"
+                                                                    StrokeThickness="0"
+                                                                    Padding="8,6"
+                                                                    VerticalOptions="Center">
+                                                                <Border.GestureRecognizers>
+                                                                    <TapGestureRecognizer
+                                                                        Command="{Binding Source={x:Reference RootPage}, Path=BindingContext.PickDescriptionCommand}"
+                                                                        CommandParameter="{Binding .}" />
+                                                                </Border.GestureRecognizers>
+                                                                <Label Text="&#x1F457;" FontSize="12"
+                                                                       TextColor="{StaticResource Primary}" />
+                                                            </Border>
+                                                        </Grid>
+                                                        <!-- Row 2: Qty × Rate = Amount + delete -->
+                                                        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto"
+                                                              ColumnSpacing="6" VerticalOptions="Center">
+                                                            <Entry Grid.Column="0"
+                                                                   Text="{Binding Quantity}"
+                                                                   Keyboard="Numeric"
+                                                                   WidthRequest="56"
+                                                                   HorizontalTextAlignment="Center" />
+                                                            <Label  Grid.Column="1" Text="×" VerticalOptions="Center"
+                                                                    TextColor="{StaticResource SubtleText}" />
+                                                            <Entry Grid.Column="2"
+                                                                   Text="{Binding UnitPriceText}"
+                                                                   Keyboard="Numeric"
+                                                                   WidthRequest="88"
+                                                                   HorizontalTextAlignment="End"
+                                                                   Placeholder="0" />
+                                                            <Label  Grid.Column="3" Text="=" VerticalOptions="Center"
+                                                                    HorizontalOptions="End"
+                                                                    TextColor="{StaticResource SubtleText}" />
+                                                            <Label  Grid.Column="4"
+                                                                    Text="{Binding LineTotalDisplay}"
+                                                                    FontFamily="OpenSansSemibold" FontSize="14"
+                                                                    VerticalOptions="Center"
+                                                                    HorizontalOptions="End"
+                                                                    WidthRequest="80"
+                                                                    HorizontalTextAlignment="End" />
+                                                            <Border Grid.Column="5"
+                                                                    StrokeShape="RoundRectangle 8"
+                                                                    BackgroundColor="Transparent"
+                                                                    Stroke="{StaticResource DangerRed}"
+                                                                    StrokeThickness="1"
+                                                                    Padding="6,4"
+                                                                    Margin="6,0,0,0">
+                                                                <Border.GestureRecognizers>
+                                                                    <TapGestureRecognizer
+                                                                        Command="{Binding Source={x:Reference RootPage}, Path=BindingContext.RemoveLineItemCommand}"
+                                                                        CommandParameter="{Binding .}" />
+                                                                </Border.GestureRecognizers>
+                                                                <Label Text="&#x1F5D1;" FontSize="12"
+                                                                       TextColor="{StaticResource DangerRed}" />
+                                                            </Border>
+                                                        </Grid>
+                                                    </VerticalStackLayout>
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+
+                                <!-- Discount stays as its own row (single flat amount). -->
+                                <VerticalStackLayout Spacing="6">
+                                    <Label Text="{Binding L.DiscountLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border StrokeShape="RoundRectangle 10"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                                            Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                            StrokeThickness="1" Padding="10,0">
+                                        <Entry Text="{Binding DiscountText}" Keyboard="Numeric" Placeholder="0" />
+                                    </Border>
+                                </VerticalStackLayout>
+
+                                <!-- Live-computed breakdown: subtotal / tax / total -->
+                                <Border StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="{StaticResource PrimarySoft}"
+                                        StrokeThickness="0" Padding="14,10">
+                                    <VerticalStackLayout Spacing="4">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0" Text="{Binding L.SubtotalLabel}"
+                                                   FontSize="12" TextColor="{StaticResource SubtleText}" />
+                                            <Label Grid.Column="1" Text="{Binding SubtotalDisplay}"
+                                                   FontFamily="OpenSansSemibold" FontSize="13" />
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0" Text="{Binding L.TaxLabel}"
+                                                   FontSize="12" TextColor="{StaticResource SubtleText}" />
+                                            <Label Grid.Column="1" Text="{Binding TaxDisplay}"
+                                                   FontFamily="OpenSansSemibold" FontSize="13" />
+                                        </Grid>
+                                        <BoxView HeightRequest="1" BackgroundColor="{StaticResource DividerLine}" />
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0" Text="{Binding L.GrandTotalLabel}"
+                                                   FontFamily="OpenSansSemibold" FontSize="14"
+                                                   TextColor="{StaticResource Primary}" />
+                                            <Label Grid.Column="1" Text="{Binding GrandTotalDisplay}"
+                                                   FontFamily="OpenSansSemibold" FontSize="15"
+                                                   TextColor="{StaticResource Primary}" />
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <!-- Advance + Payment method side-by-side -->
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="6">
+                                        <Label Text="{Binding L.AdvancePaidLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border StrokeShape="RoundRectangle 10"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                                                Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                                StrokeThickness="1" Padding="10,0">
+                                            <Entry Text="{Binding AdvancePaidText}" Keyboard="Numeric" Placeholder="0" />
+                                        </Border>
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="6">
+                                        <Label Text="{Binding L.PaymentMethodLabel}" Style="{StaticResource FieldLabel}" />
+                                        <Border StrokeShape="RoundRectangle 10"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                                                Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                                StrokeThickness="1" Padding="10,0">
+                                            <Picker ItemsSource="{Binding PaymentMethods}"
+                                                    SelectedItem="{Binding SelectedPaymentMethod}"
+                                                    ItemDisplayBinding="{Binding Converter={StaticResource PaymentMethodDisplayConverter}}"
+                                                    Title="{Binding L.PaymentMethodLabel}" />
+                                        </Border>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <!-- Balance due callout: prominent green/red depending on state -->
+                                <Border StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="#0D10B981"
+                                        Stroke="#4010B981" StrokeThickness="1"
+                                        Padding="14,10">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Label Grid.Column="0" Text="{Binding L.BalanceDueLabel}"
+                                               FontFamily="OpenSansSemibold" FontSize="14"
+                                               TextColor="#065F46" />
+                                        <Label Grid.Column="1" Text="{Binding BalanceDueDisplay}"
+                                               FontFamily="OpenSansSemibold" FontSize="17"
+                                               TextColor="#065F46" />
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ ACTION BUTTONS ═══════════════ -->
+                <Grid ColumnDefinitions="*,2*" ColumnSpacing="12" Margin="0,10,0,0">
+                    <Button Grid.Column="0"
+                            Text="{Binding L.CancelLabel}"
+                            Command="{Binding CancelCommand}"
+                            Style="{StaticResource GhostButton}"
+                            HeightRequest="52" />
+                    <Button Grid.Column="1"
+                            Text="{Binding L.SaveLabel}"
+                            Command="{Binding SaveCommand}"
+                            HeightRequest="52" CornerRadius="12"
+                            FontFamily="OpenSansSemibold" FontSize="15" />
+                </Grid>
+
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

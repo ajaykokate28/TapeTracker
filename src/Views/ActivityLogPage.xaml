@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             x:Class="TapeTracker.Views.ActivityLogPage"
+             x:DataType="vm:ActivityLogViewModel"
+             Title="{Binding L.ActivityLogTitle}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{Binding L.RefreshLabel}"
+                     Command="{Binding LoadCommand}"
+                     Order="Primary" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- ═══════════════ HEADER ═══════════════ -->
+        <Border Grid.Row="0" StrokeThickness="0" Padding="20,22,20,26">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4F46E5" Offset="0.0" />
+                    <GradientStop Color="#6D28D9" Offset="0.55" />
+                    <GradientStop Color="#DB2777" Offset="1.0" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                <Border Grid.Column="0"
+                        WidthRequest="46" HeightRequest="46"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#33FFFFFF"
+                        Stroke="#55FFFFFF" StrokeThickness="1"
+                        VerticalOptions="Center">
+                    <Label Text="&#x1F4DC;" FontSize="22"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                    <Label Text="{Binding L.ActivityLogTitle}"
+                           FontFamily="OpenSansSemibold" FontSize="22"
+                           TextColor="White" />
+                    <Label Text="{Binding L.ActivityLogSubtitle}"
+                           FontSize="12" TextColor="#E0E7FF" />
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════ FILTER CHIPS ═══════════════ -->
+        <ScrollView Grid.Row="1" Orientation="Horizontal" Margin="0,-14,0,0"
+                    HorizontalScrollBarVisibility="Never">
+            <HorizontalStackLayout Spacing="8" Padding="16,0,16,10">
+
+                <!-- All -->
+                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Padding="12,7"
+                        BackgroundColor="{Binding IsAll, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|Transparent'}"
+                        Stroke="{Binding IsAll, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#E2E8F0'}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SetFilterAllCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding L.FilterAllLabel}" FontSize="12" FontFamily="OpenSansSemibold" VerticalOptions="Center"
+                           TextColor="{Binding IsAll, Converter={StaticResource BoolToColorConverter}, ConverterParameter='White|#64748B'}" />
+                </Border>
+
+                <!-- Auth -->
+                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Padding="12,7"
+                        BackgroundColor="{Binding IsAuth, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|Transparent'}"
+                        Stroke="{Binding IsAuth, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#E2E8F0'}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SetFilterAuthCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding L.FilterAuthLabel}" FontSize="12" FontFamily="OpenSansSemibold" VerticalOptions="Center"
+                           TextColor="{Binding IsAuth, Converter={StaticResource BoolToColorConverter}, ConverterParameter='White|#64748B'}" />
+                </Border>
+
+                <!-- Customers -->
+                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Padding="12,7"
+                        BackgroundColor="{Binding IsCustomers, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|Transparent'}"
+                        Stroke="{Binding IsCustomers, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#E2E8F0'}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SetFilterCustomersCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding L.FilterCustomersLabel}" FontSize="12" FontFamily="OpenSansSemibold" VerticalOptions="Center"
+                           TextColor="{Binding IsCustomers, Converter={StaticResource BoolToColorConverter}, ConverterParameter='White|#64748B'}" />
+                </Border>
+
+                <!-- Orders -->
+                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Padding="12,7"
+                        BackgroundColor="{Binding IsOrders, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|Transparent'}"
+                        Stroke="{Binding IsOrders, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#E2E8F0'}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SetFilterOrdersCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding L.FilterOrdersLabel}" FontSize="12" FontFamily="OpenSansSemibold" VerticalOptions="Center"
+                           TextColor="{Binding IsOrders, Converter={StaticResource BoolToColorConverter}, ConverterParameter='White|#64748B'}" />
+                </Border>
+
+                <!-- Users -->
+                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Padding="12,7"
+                        BackgroundColor="{Binding IsUsers, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|Transparent'}"
+                        Stroke="{Binding IsUsers, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#E2E8F0'}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SetFilterUsersCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding L.FilterUsersLabel}" FontSize="12" FontFamily="OpenSansSemibold" VerticalOptions="Center"
+                           TextColor="{Binding IsUsers, Converter={StaticResource BoolToColorConverter}, ConverterParameter='White|#64748B'}" />
+                </Border>
+
+                <!-- Assignments -->
+                <Border StrokeShape="RoundRectangle 18" StrokeThickness="1" Padding="12,7"
+                        BackgroundColor="{Binding IsAssignments, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|Transparent'}"
+                        Stroke="{Binding IsAssignments, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#E2E8F0'}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SetFilterAssignmentsCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding L.FilterAssignmentsLabel}" FontSize="12" FontFamily="OpenSansSemibold" VerticalOptions="Center"
+                           TextColor="{Binding IsAssignments, Converter={StaticResource BoolToColorConverter}, ConverterParameter='White|#64748B'}" />
+                </Border>
+
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- ═══════════════ FEED ═══════════════ -->
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Rows}"
+                        Margin="16,0,16,16">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center"
+                                     Spacing="14" Padding="32,60"
+                                     IsVisible="{Binding IsEmpty}">
+                    <Border WidthRequest="86" HeightRequest="86"
+                            StrokeShape="RoundRectangle 43"
+                            Background="{StaticResource AvatarGradient}"
+                            StrokeThickness="0"
+                            HorizontalOptions="Center">
+                        <Label Text="&#x1F4DC;" FontSize="34"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Text="{Binding L.NoActivityTitle}"
+                           FontFamily="OpenSansSemibold" FontSize="18"
+                           HorizontalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                    <Label Text="{Binding L.NoActivityHint}"
+                           FontSize="13" TextColor="{StaticResource SubtleText}"
+                           HorizontalTextAlignment="Center"
+                           MaximumWidthRequest="320" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ActivityRowViewModel">
+                    <!-- No Border.Shadow in item templates (crashes Microsoft.UI.Xaml on Windows). -->
+                    <Border Margin="0,6" Padding="14,12"
+                            StrokeShape="RoundRectangle 14"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                            StrokeThickness="1">
+                        <Grid ColumnDefinitions="Auto,*,Auto"
+                              RowDefinitions="Auto,Auto"
+                              ColumnSpacing="12" RowSpacing="4">
+
+                            <!-- Coloured icon badge -->
+                            <Border Grid.Column="0" Grid.RowSpan="2"
+                                    WidthRequest="38" HeightRequest="38"
+                                    StrokeShape="RoundRectangle 19"
+                                    BackgroundColor="{Binding ActionColor}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding Icon}" FontSize="16"
+                                       TextColor="White"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+
+                            <!-- Summary line -->
+                            <Label Grid.Column="1" Grid.Row="0"
+                                   Text="{Binding Summary}"
+                                   FontSize="14"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                   LineBreakMode="WordWrap" />
+
+                            <!-- Time -->
+                            <Label Grid.Column="2" Grid.Row="0"
+                                   Text="{Binding RelativeTime}"
+                                   FontSize="11" FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource SubtleText}"
+                                   VerticalOptions="Start" />
+
+                            <!-- Meta row: user + action pill -->
+                            <HorizontalStackLayout Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1"
+                                                   Spacing="8">
+                                <Border StrokeShape="RoundRectangle 6"
+                                        BackgroundColor="{Binding ActionColor}"
+                                        StrokeThickness="0" Padding="6,2">
+                                    <Label Text="{Binding ActionLabel}" FontSize="10"
+                                           FontFamily="OpenSansSemibold"
+                                           TextColor="White" />
+                                </Border>
+                                <Label Text="&#x2022;" FontSize="10"
+                                       TextColor="{StaticResource SubtleText}"
+                                       VerticalOptions="Center" />
+                                <Label Text="{Binding UserDisplayName}"
+                                       FontSize="12" TextColor="{StaticResource SubtleText}"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <ActivityIndicator Grid.Row="2"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           Color="{StaticResource Primary}" />
+    </Grid>
+</ContentPage>

@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             x:Class="TapeTracker.Views.OrgRegistrationPage"
+             x:DataType="vm:OrgRegistrationViewModel"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.Resources>
+        <Style x:Key="FieldWrap" TargetType="Border">
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Padding" Value="10,0" />
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontFamily" Value="OpenSansSemibold" />
+            <Setter Property="CharacterSpacing" Value="0.6" />
+            <Setter Property="TextColor" Value="{StaticResource Gray500}" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,40">
+
+            <!-- ═══════════════ HEADER ═══════════════ -->
+            <Border StrokeThickness="0" Padding="24,32,24,44">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4F46E5" Offset="0.0" />
+                        <GradientStop Color="#6D28D9" Offset="0.55" />
+                        <GradientStop Color="#DB2777" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <VerticalStackLayout Spacing="14" HorizontalOptions="Center">
+                    <Border WidthRequest="72" HeightRequest="72"
+                            StrokeShape="RoundRectangle 36"
+                            BackgroundColor="#33FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            HorizontalOptions="Center">
+                        <Label Text="&#x1F3EA;" FontSize="32"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Text="{Binding L.OrgRegisterTitle}"
+                           FontFamily="OpenSansSemibold" FontSize="22"
+                           TextColor="White" HorizontalOptions="Center" />
+                    <Label Text="{Binding L.OrgRegisterSubtitle}"
+                           FontSize="12" TextColor="#E0E7FF"
+                           HorizontalTextAlignment="Center"
+                           MaximumWidthRequest="320" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══════════════ SHOP SECTION ═══════════════ -->
+            <Border Margin="18,-24,18,0"
+                    StrokeShape="RoundRectangle 16"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                    Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                    Padding="18,18">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,6" Radius="18" Opacity="0.06" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="{Binding L.ShopSectionLabel}" Style="{StaticResource SectionTitle}" />
+
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{Binding L.ShopNameLabel}" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldWrap}">
+                            <Entry Text="{Binding ShopName}"
+                                   Placeholder="{Binding L.ShopNamePh}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="{Binding L.ShopPhoneLabel}" Style="{StaticResource FieldLabel}" />
+                            <Border Style="{StaticResource FieldWrap}">
+                                <Entry Text="{Binding ShopPhone}" Keyboard="Telephone" />
+                            </Border>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="{Binding L.ShopAddressLabel}" Style="{StaticResource FieldLabel}" />
+                            <Border Style="{StaticResource FieldWrap}">
+                                <Entry Text="{Binding ShopAddress}" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══════════════ ADMIN SECTION ═══════════════ -->
+            <Border Margin="18,14,18,0"
+                    StrokeShape="RoundRectangle 16"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                    Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                    Padding="18,18">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,6" Radius="18" Opacity="0.06" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="{Binding L.AdminSectionLabel}" Style="{StaticResource SectionTitle}" />
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="{Binding L.UsernameLabel}" Style="{StaticResource FieldLabel}" />
+                            <Border Style="{StaticResource FieldWrap}">
+                                <Entry Text="{Binding Username}"
+                                       Placeholder="{Binding L.UsernamePh}" />
+                            </Border>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="{Binding L.DisplayNameLabel}" Style="{StaticResource FieldLabel}" />
+                            <Border Style="{StaticResource FieldWrap}">
+                                <Entry Text="{Binding DisplayName}"
+                                       Placeholder="{Binding L.DisplayNamePh}" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{Binding L.PasswordLabel}" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldWrap}">
+                            <Entry Text="{Binding Password}"
+                                   Placeholder="{Binding L.PasswordPh}"
+                                   IsPassword="True" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{Binding L.ConfirmPasswordLabel}" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource FieldWrap}">
+                            <Entry Text="{Binding ConfirmPassword}"
+                                   IsPassword="True" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Error banner -->
+                    <Border IsVisible="{Binding HasError}"
+                            StrokeShape="RoundRectangle 10"
+                            BackgroundColor="{StaticResource DangerSoft}"
+                            Stroke="{StaticResource DangerRed}" StrokeThickness="1"
+                            Padding="12,10">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="&#x26A0;" FontSize="14"
+                                   TextColor="{StaticResource DangerRed}" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding ErrorMessage}"
+                                   FontSize="12" TextColor="{StaticResource DangerRed}"
+                                   VerticalOptions="Center" LineBreakMode="WordWrap" />
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══════════════ SUBMIT ═══════════════ -->
+            <Button Text="{Binding L.CreateShopButton}"
+                    Command="{Binding RegisterCommand}"
+                    IsEnabled="{Binding IsNotBusy}"
+                    Margin="18,18,18,0"
+                    HeightRequest="52" CornerRadius="12"
+                    FontFamily="OpenSansSemibold" FontSize="15" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="{StaticResource Primary}"
+                               HorizontalOptions="Center" Margin="0,14,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

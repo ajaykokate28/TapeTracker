@@ -1,0 +1,223 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>TapeTracker Icon Preview — Gold Needle & Thread</title>
+<style>
+  :root {
+    --indigo-950: #1E1B4B;
+    --indigo-900: #312E81;
+    --indigo-700: #4338CA;
+    --violet-700: #6D28D9;
+  }
+  body {
+    background: radial-gradient(ellipse at top, #1a1108 0%, #050505 50%, #000000 100%);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #F1F5F9;
+    padding: 32px;
+    margin: 0;
+    min-height: 100vh;
+  }
+  h1 { font-weight: 300; letter-spacing: 2px; margin-bottom: 4px; }
+  .subtitle { opacity: 0.65; font-size: 14px; margin-bottom: 32px; }
+  h2 {
+    margin: 40px 0 12px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    opacity: 0.75;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding-top: 20px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 16px;
+  }
+  .tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    min-height: 180px;
+    text-align: center;
+  }
+  .tile img { display: block; }
+  .tile .label { font-size: 11px; opacity: 0.65; margin-top: 12px; letter-spacing: 0.5px; }
+  .tile .size-badge { font-size: 10px; opacity: 0.5; margin-top: 4px; font-family: 'Consolas', monospace; }
+
+  /* Simulated in-app containers */
+  .light-glass { background: rgba(255,255,255,0.9); }
+  .light-glass .label, .light-glass .size-badge { color: #334155; }
+  .dark-indigo { background: #1E1B4B; }
+  .avatar-grad { background: linear-gradient(135deg, #6366F1, #A78BFA); }
+
+  /* Compose app-icon background + foreground */
+  .composed {
+    position: relative;
+    display: inline-block;
+  }
+  .composed .bg, .composed .fg {
+    display: block;
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .composed .bg { position: relative; }
+
+  .callout {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: rgba(251,191,36,0.08);
+    border-left: 3px solid #FBBF24;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<h1>TapeTracker — Gold Needle &amp; Thread</h1>
+<div class="subtitle">Preview every size &amp; every surface the icon actually appears on.</div>
+
+<div class="callout">
+  <strong>Design:</strong> polished-gold sewing needle with a graceful curling thread on deep charcoal-black, warmed by a subtle amber halo. Luxury boutique tailor aesthetic (Savile Row / Zegna territory). The splash BaseColor has been switched to <code>#0A0A0A</code> to match.
+</div>
+
+<!-- ═══════════════ WINDOWS TASKBAR / SHORTCUT SIZES ═══════════════ -->
+<h2>Windows taskbar &amp; shortcut sizes (composite = background + foreground)</h2>
+<div class="grid">
+  <div class="tile">
+    <div class="composed" style="width: 16px; height: 16px;">
+      <img class="bg" src="src/Resources/AppIcon/appicon.svg" width="16" height="16"/>
+      <img class="fg" src="src/Resources/AppIcon/appiconfg.svg" width="16" height="16"/>
+    </div>
+    <div class="label">Taskbar (small)</div>
+    <div class="size-badge">16 × 16</div>
+  </div>
+  <div class="tile">
+    <div class="composed" style="width: 24px; height: 24px;">
+      <img class="bg" src="src/Resources/AppIcon/appicon.svg" width="24" height="24"/>
+      <img class="fg" src="src/Resources/AppIcon/appiconfg.svg" width="24" height="24"/>
+    </div>
+    <div class="label">Taskbar (medium)</div>
+    <div class="size-badge">24 × 24</div>
+  </div>
+  <div class="tile">
+    <div class="composed" style="width: 32px; height: 32px;">
+      <img class="bg" src="src/Resources/AppIcon/appicon.svg" width="32" height="32"/>
+      <img class="fg" src="src/Resources/AppIcon/appiconfg.svg" width="32" height="32"/>
+    </div>
+    <div class="label">Desktop shortcut</div>
+    <div class="size-badge">32 × 32</div>
+  </div>
+  <div class="tile">
+    <div class="composed" style="width: 48px; height: 48px;">
+      <img class="bg" src="src/Resources/AppIcon/appicon.svg" width="48" height="48"/>
+      <img class="fg" src="src/Resources/AppIcon/appiconfg.svg" width="48" height="48"/>
+    </div>
+    <div class="label">File Explorer</div>
+    <div class="size-badge">48 × 48</div>
+  </div>
+  <div class="tile">
+    <div class="composed" style="width: 71px; height: 71px;">
+      <img class="bg" src="src/Resources/AppIcon/appicon.svg" width="71" height="71"/>
+      <img class="fg" src="src/Resources/AppIcon/appiconfg.svg" width="71" height="71"/>
+    </div>
+    <div class="label">Small tile</div>
+    <div class="size-badge">71 × 71</div>
+  </div>
+  <div class="tile">
+    <div class="composed" style="width: 150px; height: 150px;">
+      <img class="bg" src="src/Resources/AppIcon/appicon.svg" width="150" height="150"/>
+      <img class="fg" src="src/Resources/AppIcon/appiconfg.svg" width="150" height="150"/>
+    </div>
+    <div class="label">Start-menu tile</div>
+    <div class="size-badge">150 × 150</div>
+  </div>
+  <div class="tile">
+    <div class="composed" style="width: 256px; height: 256px;">
+      <img class="bg" src="src/Resources/AppIcon/appicon.svg" width="256" height="256"/>
+      <img class="fg" src="src/Resources/AppIcon/appiconfg.svg" width="256" height="256"/>
+    </div>
+    <div class="label">Store / large tile</div>
+    <div class="size-badge">256 × 256</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SPLASH SCREEN ═══════════════ -->
+<h2>Splash screen (shown over #1E1B4B during launch)</h2>
+<div class="grid">
+  <div class="tile dark-indigo" style="min-height: 320px; grid-column: span 2;">
+    <img src="src/Resources/Splash/splash.svg" width="280" height="280"/>
+    <div class="label" style="opacity: 0.5;">splash.svg — 280 px preview</div>
+  </div>
+  <div class="tile dark-indigo" style="min-height: 320px; grid-column: span 2;">
+    <img src="src/Resources/Splash/splash.svg" width="200" height="200"/>
+    <div class="label" style="opacity: 0.5;">splash.svg — 200 px preview</div>
+  </div>
+</div>
+
+<!-- ═══════════════ IN-APP EMBLEM ═══════════════ -->
+<h2>In-app emblem (tapemark.svg) — every place it actually appears</h2>
+<div class="grid">
+  <div class="tile">
+    <img src="src/Resources/Images/tapemark.svg" width="30" height="30"/>
+    <div class="label">Customer-list toolbar (legacy)</div>
+    <div class="size-badge">30 × 30 — transparent bg</div>
+  </div>
+  <div class="tile">
+    <img src="src/Resources/Images/tapemark.svg" width="46" height="46"/>
+    <div class="label">Header brand mark</div>
+    <div class="size-badge">46 × 46</div>
+  </div>
+  <div class="tile light-glass">
+    <img src="src/Resources/Images/tapemark.svg" width="46" height="46"/>
+    <div class="label">Header on light card</div>
+    <div class="size-badge">46 × 46 — light glass</div>
+  </div>
+  <div class="tile">
+    <img src="src/Resources/Images/tapemark.svg" width="80" height="80"/>
+    <div class="label">LoginPage + SplashPage</div>
+    <div class="size-badge">80 × 80</div>
+  </div>
+  <div class="tile">
+    <img src="src/Resources/Images/tapemark.svg" width="120" height="120"/>
+    <div class="label">Empty-state hero</div>
+    <div class="size-badge">120 × 120</div>
+  </div>
+  <div class="tile avatar-grad">
+    <img src="src/Resources/Images/tapemark.svg" width="60" height="60"/>
+    <div class="label">Over gradient avatar bg</div>
+    <div class="size-badge">60 × 60 — indigo/violet gradient</div>
+  </div>
+</div>
+
+<!-- ═══════════════ RAW SVG FILES ═══════════════ -->
+<h2>Raw SVG files (isolated on neutral gray for pixel-level inspection)</h2>
+<div class="grid">
+  <div class="tile" style="background: #64748B;">
+    <img src="src/Resources/AppIcon/appicon.svg" width="200" height="200"/>
+    <div class="label">appicon.svg (background layer)</div>
+  </div>
+  <div class="tile" style="background: #64748B;">
+    <img src="src/Resources/AppIcon/appiconfg.svg" width="200" height="200"/>
+    <div class="label">appiconfg.svg (foreground layer)</div>
+  </div>
+  <div class="tile" style="background: #64748B;">
+    <img src="src/Resources/Splash/splash.svg" width="200" height="200"/>
+    <div class="label">splash.svg</div>
+  </div>
+  <div class="tile" style="background: #64748B;">
+    <img src="src/Resources/Images/tapemark.svg" width="200" height="200"/>
+    <div class="label">tapemark.svg (in-app emblem)</div>
+  </div>
+</div>
+
+</body>
+</html>

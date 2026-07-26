@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  In-app brand mark (v7 — matches the new taskbar app icon).
+
+  Displayed on the Login screen inside a circular badge, and previously
+  from Shell.TitleView (now static). Sized for 60–120 px on-screen use,
+  where a smaller canvas means the ruler ticks from the full app icon
+  would clutter — so this variant shows only the bold T mark centered
+  in a filled circle with the brand gradient.
+
+  Kept as its own file (rather than reusing appiconfg.svg) because:
+    ● We want a self-contained circular badge here (the login screen
+      places the mark on a white card, so a plain foreground with
+      transparent background wouldn't sit right).
+    ● Different scale demands different visual weight — the app icon
+      needs the tick marks to sell "measurement", but the login screen
+      already has "Tailor measurement manager" as tagline text right
+      next to it, so the ticks would be redundant.
+
+  Straight rects + circles only so SkiaSharp renders it identically on
+  every MAUI target.
+-->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Full brand gradient inside a radial for a slight center-bright
+         look at this small size (matches the header hero-gradient feel). -->
+    <radialGradient id="markBg" cx="52" cy="46" r="88" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#6366F1"/>
+      <stop offset="55%"  stop-color="#6D28D9"/>
+      <stop offset="100%" stop-color="#DB2777"/>
+    </radialGradient>
+
+    <!-- Slight cream tint on the ink so it doesn't glare on the purple. -->
+    <linearGradient id="markInk" x1="0" y1="24" x2="0" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F5F3FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ═══════════════ DISC ═══════════════ -->
+  <circle cx="64" cy="64" r="60" fill="url(#markBg)"/>
+
+  <!-- Thin bright rim (0.5 px @ 128 px canvas) for polish; disappears at
+       small sizes without leaving artifacts. -->
+  <circle cx="64" cy="64" r="59.5" fill="none"
+          stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.35"/>
+
+  <!-- ═══════════════ T MARK ═══════════════ -->
+  <!-- Crossbar -->
+  <rect x="30" y="34" width="68" height="16" rx="6" ry="6"
+        fill="url(#markInk)"/>
+
+  <!-- Tape-hook tabs at each crossbar end -->
+  <rect x="32" y="47" width="6"  height="7" rx="2" ry="2" fill="url(#markInk)"/>
+  <rect x="90" y="47" width="6"  height="7" rx="2" ry="2" fill="url(#markInk)"/>
+
+  <!-- Stem -->
+  <rect x="56" y="45" width="16" height="52" rx="5" ry="5"
+        fill="url(#markInk)"/>
+</svg>
