@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             x:Class="TapeTracker.Views.PinPage"
+             x:DataType="vm:PinViewModel"
+             Shell.NavBarIsVisible="{Binding IsSettingsMode}"
+             Title="{Binding Title}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <Grid RowDefinitions="*,Auto" Padding="0">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="0" Padding="0,0,0,24">
+
+                <!-- ═══════════════ HEADER ═══════════════ -->
+                <Border StrokeThickness="0" Padding="24,44,24,44">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#4F46E5" Offset="0.0" />
+                            <GradientStop Color="#6D28D9" Offset="0.55" />
+                            <GradientStop Color="#DB2777" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <VerticalStackLayout Spacing="14" HorizontalOptions="Center">
+                        <!-- Lock badge -->
+                        <Border WidthRequest="72" HeightRequest="72"
+                                StrokeShape="RoundRectangle 36"
+                                BackgroundColor="#33FFFFFF"
+                                Stroke="#55FFFFFF" StrokeThickness="1"
+                                HorizontalOptions="Center">
+                            <Label Text="&#x1F512;" FontSize="34"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <Label Text="{Binding Title}"
+                               FontFamily="OpenSansSemibold" FontSize="24"
+                               TextColor="White" HorizontalOptions="Center" />
+                        <Label Text="{Binding StatusMessage}"
+                               FontSize="13" TextColor="#E0E7FF"
+                               HorizontalOptions="Center" HorizontalTextAlignment="Center"
+                               MaximumWidthRequest="300" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ PIN DOTS (entry) ═══════════════ -->
+                <HorizontalStackLayout Spacing="18" HorizontalOptions="Center" Margin="0,32,0,10"
+                                       IsVisible="{Binding ShowConfirm, Converter={StaticResource InvertedBoolConverter}}">
+                    <Ellipse WidthRequest="16" HeightRequest="16"
+                             Stroke="{StaticResource PrimaryLight}" StrokeThickness="1.5"
+                             Fill="{Binding PinInput.Length, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#FFFFFF'}" />
+                    <Ellipse WidthRequest="16" HeightRequest="16"
+                             Stroke="{StaticResource PrimaryLight}" StrokeThickness="1.5"
+                             Fill="{Binding PinInput, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#FFFFFF'}" />
+                    <Ellipse WidthRequest="16" HeightRequest="16"
+                             Stroke="{StaticResource PrimaryLight}" StrokeThickness="1.5"
+                             Fill="{Binding PinInput, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#FFFFFF'}" />
+                    <Ellipse WidthRequest="16" HeightRequest="16"
+                             Stroke="{StaticResource PrimaryLight}" StrokeThickness="1.5"
+                             Fill="{Binding PinInput, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#FFFFFF'}" />
+                </HorizontalStackLayout>
+
+                <!-- ═══════════════ CONFIRM DOTS ═══════════════ -->
+                <VerticalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,32,0,10"
+                                     IsVisible="{Binding ShowConfirm}">
+                    <Label Text="{Binding L.ConfirmPinLabel}"
+                           FontFamily="OpenSansSemibold" FontSize="11"
+                           CharacterSpacing="1.5"
+                           TextColor="{StaticResource Gray500}"
+                           HorizontalOptions="Center" />
+                    <HorizontalStackLayout Spacing="18" HorizontalOptions="Center">
+                        <Ellipse WidthRequest="16" HeightRequest="16"
+                                 Stroke="{StaticResource PrimaryLight}" StrokeThickness="1.5"
+                                 Fill="{Binding ConfirmPin, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#FFFFFF'}" />
+                        <Ellipse WidthRequest="16" HeightRequest="16"
+                                 Stroke="{StaticResource PrimaryLight}" StrokeThickness="1.5"
+                                 Fill="{Binding ConfirmPin, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#FFFFFF'}" />
+                        <Ellipse WidthRequest="16" HeightRequest="16"
+                                 Stroke="{StaticResource PrimaryLight}" StrokeThickness="1.5"
+                                 Fill="{Binding ConfirmPin, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#FFFFFF'}" />
+                        <Ellipse WidthRequest="16" HeightRequest="16"
+                                 Stroke="{StaticResource PrimaryLight}" StrokeThickness="1.5"
+                                 Fill="{Binding ConfirmPin, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#4F46E5|#FFFFFF'}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- ═══════════════ NUMBER PAD ═══════════════ -->
+                <Grid ColumnDefinitions="*,*,*"
+                      RowDefinitions="Auto,Auto,Auto,Auto"
+                      Padding="40,32,40,0" ColumnSpacing="18" RowSpacing="14"
+                      HorizontalOptions="Center" MaximumWidthRequest="340">
+
+                    <Button Grid.Row="0" Grid.Column="0" Text="1" Command="{Binding DigitCommand}" CommandParameter="1" Style="{StaticResource PinButton}" />
+                    <Button Grid.Row="0" Grid.Column="1" Text="2" Command="{Binding DigitCommand}" CommandParameter="2" Style="{StaticResource PinButton}" />
+                    <Button Grid.Row="0" Grid.Column="2" Text="3" Command="{Binding DigitCommand}" CommandParameter="3" Style="{StaticResource PinButton}" />
+
+                    <Button Grid.Row="1" Grid.Column="0" Text="4" Command="{Binding DigitCommand}" CommandParameter="4" Style="{StaticResource PinButton}" />
+                    <Button Grid.Row="1" Grid.Column="1" Text="5" Command="{Binding DigitCommand}" CommandParameter="5" Style="{StaticResource PinButton}" />
+                    <Button Grid.Row="1" Grid.Column="2" Text="6" Command="{Binding DigitCommand}" CommandParameter="6" Style="{StaticResource PinButton}" />
+
+                    <Button Grid.Row="2" Grid.Column="0" Text="7" Command="{Binding DigitCommand}" CommandParameter="7" Style="{StaticResource PinButton}" />
+                    <Button Grid.Row="2" Grid.Column="1" Text="8" Command="{Binding DigitCommand}" CommandParameter="8" Style="{StaticResource PinButton}" />
+                    <Button Grid.Row="2" Grid.Column="2" Text="9" Command="{Binding DigitCommand}" CommandParameter="9" Style="{StaticResource PinButton}" />
+
+                    <!-- Empty for symmetry -->
+                    <BoxView Grid.Row="3" Grid.Column="0" Color="Transparent" />
+                    <Button Grid.Row="3" Grid.Column="1" Text="0" Command="{Binding DigitCommand}" CommandParameter="0" Style="{StaticResource PinButton}" />
+                    <!-- Backspace: outlined, semi-transparent -->
+                    <Button Grid.Row="3" Grid.Column="2" Text="&#x232B;"
+                            Command="{Binding BackspaceCommand}"
+                            FontSize="22"
+                            BackgroundColor="Transparent"
+                            TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryLight}}"
+                            BorderColor="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                            BorderWidth="1"
+                            CornerRadius="36"
+                            HeightRequest="72" WidthRequest="72"
+                            HorizontalOptions="Center" />
+                </Grid>
+
+                <!-- ═══════════════ SETTINGS ACTIONS ═══════════════ -->
+                <VerticalStackLayout Spacing="10" Margin="40,32,40,0"
+                                     IsVisible="{Binding IsSettingsMode}">
+                    <Button Text="{Binding L.RemovePinLabel}"
+                            Command="{Binding ClearPinCommand}"
+                            IsVisible="{Binding IsPinEnabled}"
+                            BackgroundColor="Transparent"
+                            TextColor="{StaticResource DangerRed}"
+                            BorderColor="{StaticResource DangerRed}"
+                            BorderWidth="1"
+                            HeightRequest="50" CornerRadius="12"
+                            FontSize="14" FontFamily="OpenSansSemibold" />
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- ═══════════════ ERROR BAR ═══════════════ -->
+        <Border Grid.Row="1"
+                IsVisible="{Binding HasError}"
+                BackgroundColor="{StaticResource DangerRed}"
+                StrokeThickness="0" Padding="20,14">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <Label Grid.Column="0" Text="&#x26A0;" FontSize="16"
+                       TextColor="White" VerticalOptions="Center" />
+                <Label Grid.Column="1" Text="{Binding StatusMessage}"
+                       TextColor="White" FontSize="14"
+                       VerticalOptions="Center" />
+            </Grid>
+        </Border>
+
+    </Grid>
+</ContentPage>

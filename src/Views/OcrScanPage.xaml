@@ -1,0 +1,345 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             x:Class="TapeTracker.Views.OcrScanPage"
+             x:DataType="vm:OcrScanViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.Resources>
+        <Style x:Key="FieldWrap" TargetType="Border">
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Padding" Value="8,0" />
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontFamily" Value="OpenSansSemibold" />
+            <Setter Property="CharacterSpacing" Value="0.6" />
+            <Setter Property="TextColor" Value="{StaticResource Gray500}" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{Binding UnitLabel}"
+                     Command="{Binding ToggleUnitCommand}"
+                     Order="Primary" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,32">
+
+            <!-- ═══════════════ HEADER ═══════════════ -->
+            <Border StrokeThickness="0" Padding="20,20,20,32">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4F46E5" Offset="0.0" />
+                        <GradientStop Color="#6D28D9" Offset="0.55" />
+                        <GradientStop Color="#DB2777" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                    <Border Grid.Column="0"
+                            WidthRequest="46" HeightRequest="46"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#33FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            VerticalOptions="Center">
+                        <Label Text="&#x1F4F7;" FontSize="20"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="{Binding L.ScanMeasurementSlipLabel}"
+                               FontFamily="OpenSansSemibold" FontSize="20"
+                               TextColor="White" />
+                        <Label Text="{Binding L.CaptureHeaderHintLabel}"
+                               FontSize="12" TextColor="#E0E7FF"
+                               CharacterSpacing="0.4" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <VerticalStackLayout Padding="16,-18,16,0" Spacing="14">
+
+                <!-- ═══════════════ STEP 1 — CAPTURE ═══════════════ -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="18">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.05" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Border Grid.Column="0"
+                                    WidthRequest="32" HeightRequest="32"
+                                    StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="{StaticResource Primary}"
+                                    StrokeThickness="0">
+                                <Label Text="1" FontFamily="OpenSansSemibold" FontSize="14"
+                                       TextColor="White"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                <Label Text="{Binding L.CaptureLabel}" Style="{StaticResource SectionTitle}" />
+                                <Label Text="{Binding L.TakePhotoOfSlipLabel}"
+                                       FontFamily="OpenSansSemibold" FontSize="14"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                            <Button Grid.Column="0"
+                                    Command="{Binding CaptureCommand}"
+                                    HeightRequest="52" CornerRadius="12"
+                                    FontFamily="OpenSansSemibold" FontSize="14"
+                                    IsEnabled="{Binding IsNotBusy}">
+                                <Button.Text>
+                                    <MultiBinding StringFormat="&#x1F4F7;  {0}">
+                                        <Binding Path="L.CameraLabel" />
+                                    </MultiBinding>
+                                </Button.Text>
+                            </Button>
+                            <Button Grid.Column="1"
+                                    Command="{Binding PickFromGalleryCommand}"
+                                    Style="{StaticResource GhostButton}"
+                                    HeightRequest="52"
+                                    IsEnabled="{Binding IsNotBusy}">
+                                <Button.Text>
+                                    <MultiBinding StringFormat="&#x1F5BC;  {0}">
+                                        <Binding Path="L.GalleryLabel" />
+                                    </MultiBinding>
+                                </Button.Text>
+                            </Button>
+                        </Grid>
+
+                        <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                           IsVisible="{Binding IsBusy}"
+                                           Color="{StaticResource Primary}"
+                                           HorizontalOptions="Center" />
+
+                        <!-- Status message -->
+                        <Border StrokeShape="RoundRectangle 10"
+                                BackgroundColor="{StaticResource SuccessSoft}"
+                                Stroke="{StaticResource SuccessGreen}" StrokeThickness="1"
+                                Padding="12,10">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="&#x2713;" FontSize="14" FontFamily="OpenSansSemibold"
+                                       TextColor="#047857" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="{Binding StatusMessage}"
+                                       FontSize="12" TextColor="#047857"
+                                       VerticalOptions="Center" LineBreakMode="WordWrap" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ STEP 2 — REVIEW & SAVE ═══════════════ -->
+                <VerticalStackLayout IsVisible="{Binding HasResult}" Spacing="14">
+
+                    <!-- Customer info -->
+                    <Border StrokeShape="RoundRectangle 16"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="18">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.05" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="14">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                <Border Grid.Column="0"
+                                        WidthRequest="32" HeightRequest="32"
+                                        StrokeShape="RoundRectangle 16"
+                                        BackgroundColor="{StaticResource Primary}"
+                                        StrokeThickness="0">
+                                    <Label Text="2" FontFamily="OpenSansSemibold" FontSize="14"
+                                           TextColor="White"
+                                           HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                    <Label Text="{Binding L.ReviewLabel}" Style="{StaticResource SectionTitle}" />
+                                    <Label Text="{Binding L.CustomerInfoLabel}"
+                                           FontFamily="OpenSansSemibold" FontSize="14"
+                                           TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto" RowSpacing="12">
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Spacing="6">
+                                    <Label Text="{Binding L.NameStarLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding Name}" Placeholder="{Binding L.FullNamePlaceholder}" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="6">
+                                    <Label Text="{Binding L.PhoneCap}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding Phone}" Keyboard="Telephone" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="6">
+                                    <Label Text="{Binding L.OrderNoCap}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding OrderNumber}" /></Border>
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="{Binding L.DateCap}" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource FieldWrap}" Padding="8,4">
+                                    <DatePicker Date="{Binding Date}" />
+                                </Border>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Shirt measurements -->
+                    <Border StrokeShape="RoundRectangle 16"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="18">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.05" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="14">
+                            <VerticalStackLayout Spacing="1">
+                                <Label Text="{Binding L.ShirtLabel}" Style="{StaticResource SectionTitle}" />
+                                <Label FontFamily="OpenSansSemibold" FontSize="14"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="&#x1F454; " />
+                                            <Span Text="{Binding L.ShirtMeasurementsLabel}" />
+                                            <Span Text=" " />
+                                            <Span Text="{Binding UnitLabel}" TextColor="{StaticResource SubtleText}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                                  RowSpacing="12" ColumnSpacing="12">
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6">
+                                    <Label Text="{Binding L.LengthLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtLength}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="6">
+                                    <Label Text="{Binding L.ChestLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtChest}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="6">
+                                    <Label Text="{Binding L.WaistLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtWaist}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="6">
+                                    <Label Text="{Binding L.HipLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtHip}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="2" Grid.Column="0" Spacing="6">
+                                    <Label Text="{Binding L.ShoulderLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtShoulder}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="6">
+                                    <Label Text="{Binding L.SleeveLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtSleeve}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="3" Grid.Column="0" Spacing="6">
+                                    <Label Text="{Binding L.CuffLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtCuff}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="3" Grid.Column="1" Spacing="6">
+                                    <Label Text="{Binding L.CollarLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding ShirtCollar}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Pant measurements -->
+                    <Border StrokeShape="RoundRectangle 16"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="18">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.05" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="14">
+                            <VerticalStackLayout Spacing="1">
+                                <Label Text="{Binding L.PantLabel}" Style="{StaticResource SectionTitle}" />
+                                <Label FontFamily="OpenSansSemibold" FontSize="14"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="&#x1F456; " />
+                                            <Span Text="{Binding L.PantMeasurementsLabel}" />
+                                            <Span Text=" " />
+                                            <Span Text="{Binding UnitLabel}" TextColor="{StaticResource SubtleText}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                                  RowSpacing="12" ColumnSpacing="12">
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6">
+                                    <Label Text="{Binding L.LengthLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantLength}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="6">
+                                    <Label Text="{Binding L.WaistLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantWaist}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="6">
+                                    <Label Text="{Binding L.HipLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantHip}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="6">
+                                    <Label Text="{Binding L.ThighLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantThigh}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="2" Grid.Column="0" Spacing="6">
+                                    <Label Text="{Binding L.AnkleLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantAnkle}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="6">
+                                    <Label Text="{Binding L.KneeLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantKnee}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="3" Grid.Column="0" Spacing="6">
+                                    <Label Text="{Binding L.SeatLabel}" Style="{StaticResource FieldLabel}" />
+                                    <Border Style="{StaticResource FieldWrap}"><Entry Text="{Binding PantSeat}" Keyboard="Numeric" Placeholder="0" /></Border>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Raw OCR toggle -->
+                    <Button Text="{Binding L.ViewRawOcrLabel}"
+                            Command="{Binding ToggleRawTextCommand}"
+                            Style="{StaticResource GhostButton}"
+                            HorizontalOptions="Start"
+                            HeightRequest="40" FontSize="12" />
+
+                    <Border IsVisible="{Binding ShowRawText}"
+                            Padding="14" StrokeShape="RoundRectangle 10"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource ElevatedSurfaceDark}}"
+                            Stroke="{StaticResource CardStroke}" StrokeThickness="1">
+                        <Label Text="{Binding RawOcrText}" FontSize="11"
+                               TextColor="{StaticResource SubtleText}" LineBreakMode="WordWrap" />
+                    </Border>
+
+                    <!-- Action buttons -->
+                    <Grid ColumnDefinitions="*,2*" ColumnSpacing="12" Margin="0,6,0,0">
+                        <Button Grid.Column="0"
+                                Text="{Binding L.CancelLabel}"
+                                Command="{Binding CancelCommand}"
+                                Style="{StaticResource GhostButton}"
+                                HeightRequest="52" />
+                        <Button Grid.Column="1"
+                                Text="{Binding L.SaveShortLabel}"
+                                Command="{Binding SaveCommand}"
+                                HeightRequest="52" CornerRadius="12"
+                                FontFamily="OpenSansSemibold" FontSize="15" />
+                    </Grid>
+
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

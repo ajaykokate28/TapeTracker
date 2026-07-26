@@ -1,0 +1,46 @@
+root = true
+
+# ---------- Defaults for every file ----------
+[*]
+charset                  = utf-8
+end_of_line              = crlf
+insert_final_newline     = true
+trim_trailing_whitespace = true
+indent_style             = space
+indent_size              = 4
+
+# ---------- C# ----------
+[*.cs]
+indent_size              = 4
+csharp_new_line_before_open_brace                = all
+csharp_new_line_before_else                      = true
+csharp_new_line_before_catch                     = true
+csharp_new_line_before_finally                   = true
+csharp_style_var_for_built_in_types              = true:suggestion
+csharp_style_var_when_type_is_apparent           = true:suggestion
+csharp_style_expression_bodied_methods           = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties        = true:suggestion
+csharp_prefer_braces                             = true:silent
+dotnet_sort_system_directives_first              = true
+dotnet_separate_import_directive_groups          = false
+dotnet_style_qualification_for_field             = false:suggestion
+dotnet_style_qualification_for_property          = false:suggestion
+dotnet_style_qualification_for_method            = false:suggestion
+dotnet_style_qualification_for_event             = false:suggestion
+dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
+
+# ---------- XAML / XML ----------
+[*.{xaml,xml,csproj,props,targets,axml}]
+indent_size              = 2
+
+# ---------- Markdown ----------
+[*.md]
+trim_trailing_whitespace = false
+
+# ---------- JSON / YAML ----------
+[*.{json,yml,yaml}]
+indent_size              = 2
+
+# ---------- Shell / PowerShell ----------
+[*.{sh,ps1,psm1}]
+indent_size              = 2

@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!--
+        TapeTracker design system.
+        Base palette follows Tailwind-style scales for consistency.
+        Semantic tokens (surface, background, text, etc.) reference the palette.
+    -->
+
+    <!-- ── Brand: Indigo → Violet ─────────────────────────────────────────── -->
+    <Color x:Key="Primary">#4F46E5</Color>          <!-- indigo-600 -->
+    <Color x:Key="PrimaryHover">#4338CA</Color>     <!-- indigo-700 -->
+    <Color x:Key="PrimaryLight">#818CF8</Color>     <!-- indigo-400 -->
+    <Color x:Key="PrimarySoft">#EEF2FF</Color>      <!-- indigo-50  -->
+    <Color x:Key="PrimaryDark">#312E81</Color>      <!-- indigo-900 -->
+
+    <Color x:Key="Secondary">#EDE9FE</Color>        <!-- violet-100 -->
+    <Color x:Key="SecondaryDarkText">#A78BFA</Color><!-- violet-400 -->
+
+    <Color x:Key="Tertiary">#7C3AED</Color>         <!-- violet-600 -->
+    <Color x:Key="Accent">#EC4899</Color>           <!-- pink-500  -->
+
+    <!-- Legacy MAUI keys kept so template controls keep resolving -->
+    <Color x:Key="PrimaryDarkText">#F1F5F9</Color>
+    <Color x:Key="MidnightBlue">#0F172A</Color>
+    <Color x:Key="OffBlack">#0B1220</Color>
+    <Color x:Key="White">White</Color>
+    <Color x:Key="Black">Black</Color>
+    <Color x:Key="Magenta">#EC4899</Color>
+
+    <!-- ── Neutral scale (slate) ──────────────────────────────────────────── -->
+    <Color x:Key="Gray50">#F8FAFC</Color>
+    <Color x:Key="Gray100">#F1F5F9</Color>
+    <Color x:Key="Gray200">#E2E8F0</Color>
+    <Color x:Key="Gray300">#CBD5E1</Color>
+    <Color x:Key="Gray400">#94A3B8</Color>
+    <Color x:Key="Gray500">#64748B</Color>
+    <Color x:Key="Gray600">#475569</Color>
+    <Color x:Key="Gray700">#334155</Color>
+    <Color x:Key="Gray800">#1E293B</Color>
+    <Color x:Key="Gray900">#0F172A</Color>
+    <Color x:Key="Gray950">#020617</Color>
+
+    <!-- ── Status / semantic ──────────────────────────────────────────────── -->
+    <Color x:Key="SuccessGreen">#10B981</Color>
+    <Color x:Key="SuccessSoft">#D1FAE5</Color>
+    <Color x:Key="WarningAmber">#F59E0B</Color>
+    <Color x:Key="WarningSoft">#FEF3C7</Color>
+    <Color x:Key="DangerRed">#EF4444</Color>
+    <Color x:Key="DangerSoft">#FEE2E2</Color>
+    <Color x:Key="InfoBlue">#3B82F6</Color>
+
+    <!-- ── Surfaces & backgrounds ─────────────────────────────────────────── -->
+    <Color x:Key="AppBackground">#F8FAFC</Color>        <!-- slate-50 -->
+    <Color x:Key="AppBackgroundDark">#0B1220</Color>
+    <Color x:Key="CardSurface">#FFFFFF</Color>
+    <Color x:Key="CardSurfaceDark">#111827</Color>
+    <Color x:Key="ElevatedSurface">#FFFFFF</Color>
+    <Color x:Key="ElevatedSurfaceDark">#1E293B</Color>
+
+    <!-- ── Text ──────────────────────────────────────────────────────────── -->
+    <Color x:Key="PrimaryText">#0F172A</Color>
+    <Color x:Key="PrimaryTextDark">#F8FAFC</Color>
+    <Color x:Key="SubtleText">#64748B</Color>
+    <Color x:Key="SubtleTextDark">#94A3B8</Color>
+    <Color x:Key="HintText">#94A3B8</Color>
+    <Color x:Key="HintTextDark">#64748B</Color>
+
+    <!-- ── Borders & lines ───────────────────────────────────────────────── -->
+    <Color x:Key="CardStroke">#E2E8F0</Color>
+    <Color x:Key="CardStrokeDark">#1E293B</Color>
+    <Color x:Key="DividerLine">#E2E8F0</Color>
+    <Color x:Key="DividerLineDark">#1E293B</Color>
+
+    <!-- ── Field surfaces ────────────────────────────────────────────────── -->
+    <Color x:Key="EntryFocusBg">#EEF2FF</Color>
+    <Color x:Key="EntryFocusBgDark">#1E1B4B</Color>
+    <Color x:Key="EntrySurface">#F8FAFC</Color>
+    <Color x:Key="EntrySurfaceDark">#0F172A</Color>
+
+    <!-- ── Avatar ────────────────────────────────────────────────────────── -->
+    <Color x:Key="AvatarBackground">#EEF2FF</Color>
+    <Color x:Key="AvatarBackgroundDark">#312E81</Color>
+
+    <!-- ── Brushes ───────────────────────────────────────────────────────── -->
+    <SolidColorBrush x:Key="PrimaryBrush"    Color="{StaticResource Primary}"   />
+    <SolidColorBrush x:Key="SecondaryBrush"  Color="{StaticResource Secondary}" />
+    <SolidColorBrush x:Key="TertiaryBrush"   Color="{StaticResource Tertiary}"  />
+    <SolidColorBrush x:Key="AccentBrush"     Color="{StaticResource Accent}"    />
+    <SolidColorBrush x:Key="SuccessBrush"    Color="{StaticResource SuccessGreen}" />
+    <SolidColorBrush x:Key="DangerBrush"     Color="{StaticResource DangerRed}" />
+    <SolidColorBrush x:Key="WhiteBrush"      Color="{StaticResource White}"     />
+    <SolidColorBrush x:Key="BlackBrush"      Color="{StaticResource Black}"     />
+
+    <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}" />
+    <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}" />
+    <SolidColorBrush x:Key="Gray300Brush" Color="{StaticResource Gray300}" />
+    <SolidColorBrush x:Key="Gray400Brush" Color="{StaticResource Gray400}" />
+    <SolidColorBrush x:Key="Gray500Brush" Color="{StaticResource Gray500}" />
+    <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}" />
+    <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}" />
+    <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}" />
+
+    <!-- ── Reusable gradients ────────────────────────────────────────────── -->
+    <LinearGradientBrush x:Key="BrandGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#4F46E5" Offset="0.0" />
+        <GradientStop Color="#7C3AED" Offset="0.55" />
+        <GradientStop Color="#EC4899" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="BrandGradientVertical" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#4F46E5" Offset="0" />
+        <GradientStop Color="#7C3AED" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="AccentBarGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#818CF8" Offset="0" />
+        <GradientStop Color="#EC4899" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="AvatarGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#EEF2FF" Offset="0" />
+        <GradientStop Color="#EDE9FE" Offset="1" />
+    </LinearGradientBrush>
+
+</ResourceDictionary>

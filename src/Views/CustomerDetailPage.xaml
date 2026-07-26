@@ -1,0 +1,839 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             xmlns:models="clr-namespace:TapeTracker.Models"
+             x:Class="TapeTracker.Views.CustomerDetailPage"
+             x:DataType="vm:CustomerDetailViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.Resources>
+        <!--  Shared styles for the per-field measurement chips inside each
+              order card. Kept page-local (rather than in Styles/Colors.xaml)
+              because only this page renders the full-shirt/full-pant grid.  -->
+        <Style x:Key="MeasureChip" TargetType="Border">
+            <Setter Property="StrokeShape">
+                <Setter.Value>
+                    <RoundRectangle CornerRadius="8" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BackgroundColor"
+                    Value="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource ElevatedSurfaceDark}}" />
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="Padding"         Value="8,6" />
+        </Style>
+        <Style x:Key="MeasureChipLabel" TargetType="Label">
+            <Setter Property="FontSize"        Value="9" />
+            <Setter Property="CharacterSpacing" Value="1" />
+            <Setter Property="TextColor"       Value="{StaticResource Gray500}" />
+        </Style>
+        <Style x:Key="MeasureChipValue" TargetType="Label">
+            <Setter Property="FontFamily"      Value="OpenSansSemibold" />
+            <Setter Property="FontSize"        Value="13" />
+            <Setter Property="TextColor"
+                    Value="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ContentPage.ToolbarItems>
+        <!-- Add-order is admin-only (creating orders is a management action). -->
+        <ToolbarItem Text="{Binding L.AddOrderLabel}"
+                     Command="{Binding AddOrderCommand}"
+                     Order="Primary"
+                     IsEnabled="{Binding Auth.CanManageCustomers}" />
+    </ContentPage.ToolbarItems>
+
+    <Grid x:Name="RootGrid" RowDefinitions="Auto,Auto,*">
+
+        <!-- ═══════════════ CUSTOMER HEADER ═══════════════ -->
+        <Border Grid.Row="0" Padding="20,22,20,28" StrokeThickness="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4F46E5" Offset="0.0" />
+                    <GradientStop Color="#6D28D9" Offset="0.55" />
+                    <GradientStop Color="#DB2777" Offset="1.0" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                <Border Grid.Column="0"
+                        WidthRequest="56" HeightRequest="56"
+                        StrokeShape="RoundRectangle 28"
+                        BackgroundColor="#33FFFFFF"
+                        Stroke="#55FFFFFF" StrokeThickness="1"
+                        VerticalOptions="Center">
+                    <Label FontFamily="OpenSansSemibold" FontSize="20"
+                           TextColor="White"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           Text="{Binding CustomerName, Converter={StaticResource InitialsConverter}}" />
+                </Border>
+                <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                    <Label Text="{Binding CustomerName}"
+                           FontFamily="OpenSansSemibold" FontSize="22" TextColor="White" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="&#x1F4DE;" FontSize="12" TextColor="#E0E7FF" VerticalOptions="Center" />
+                        <Label Text="{Binding Phone}" FontSize="13" TextColor="#E0E7FF" VerticalOptions="Center" />
+
+                        <!--
+                            Quick-contact pills: hidden when the customer has no
+                            phone number (an empty string). Both pills sit on a
+                            translucent white so they read well on the gradient
+                            header without needing a separate colour token.
+                        -->
+                        <Border StrokeShape="RoundRectangle 12"
+                                BackgroundColor="#33FFFFFF"
+                                Stroke="#55FFFFFF" StrokeThickness="1"
+                                Padding="8,3"
+                                VerticalOptions="Center"
+                                IsVisible="{Binding Phone, Converter={StaticResource NullToBoolConverter}}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CallCustomerCommand}" />
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="4">
+                                <Label Text="&#x1F4DE;" FontSize="11" VerticalOptions="Center" InputTransparent="True" />
+                                <Label Text="{Binding L.CallLabel}"
+                                       FontSize="11" FontFamily="OpenSansSemibold"
+                                       TextColor="White" VerticalOptions="Center"
+                                       InputTransparent="True" />
+                            </HorizontalStackLayout>
+                        </Border>
+                        <Border StrokeShape="RoundRectangle 12"
+                                BackgroundColor="#3325D366"
+                                Stroke="#8825D366" StrokeThickness="1"
+                                Padding="8,3"
+                                VerticalOptions="Center"
+                                IsVisible="{Binding Phone, Converter={StaticResource NullToBoolConverter}}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding OpenWhatsAppCommand}" />
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="4">
+                                <Label Text="&#x1F4AC;" FontSize="11" VerticalOptions="Center" InputTransparent="True" />
+                                <Label Text="{Binding L.ChatLabel}"
+                                       FontSize="11" FontFamily="OpenSansSemibold"
+                                       TextColor="White" VerticalOptions="Center"
+                                       InputTransparent="True" />
+                            </HorizontalStackLayout>
+                        </Border>
+
+                        <BoxView WidthRequest="3" HeightRequest="3" CornerRadius="1.5"
+                                 BackgroundColor="#99FFFFFF" VerticalOptions="Center" />
+                        <Label FontSize="12" TextColor="#E0E7FF" VerticalOptions="Center">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding L.UnitPrefix}" />
+                                    <Span Text="{Binding UnitLabel}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </HorizontalStackLayout>
+                    <!-- Family / group tag pill -->
+                    <Border StrokeShape="RoundRectangle 10"
+                            BackgroundColor="#33FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            Padding="8,3"
+                            Margin="0,4,0,0"
+                            HorizontalOptions="Start"
+                            IsVisible="{Binding Tag, Converter={StaticResource NullToBoolConverter}}">
+                        <HorizontalStackLayout Spacing="4">
+                            <Label Text="&#x1F3F7;" FontSize="11" TextColor="White" VerticalOptions="Center" />
+                            <Label Text="{Binding Tag}" FontSize="12"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="White" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════ FAMILY MEMBERS PANEL ═══════════════ -->
+        <!-- Shown only when this customer has a Tag AND at least one other customer
+             shares it. Each chip is tappable and navigates to that member's detail. -->
+        <Border Grid.Row="1"
+                IsVisible="{Binding HasFamily}"
+                Margin="16,-14,16,0"
+                StrokeShape="RoundRectangle 14"
+                BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                StrokeThickness="1"
+                Padding="14,12">
+            <VerticalStackLayout Spacing="8">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="&#x1F465;"
+                           FontSize="14" VerticalOptions="Center" />
+                    <Label Grid.Column="1" VerticalOptions="Center" FontSize="13">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{Binding L.FamilyPrefix}" TextColor="{StaticResource SubtleText}" />
+                                <Span Text="{Binding Tag}" FontFamily="OpenSansSemibold"
+                                      TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Border Grid.Column="2"
+                            StrokeShape="RoundRectangle 8"
+                            BackgroundColor="{StaticResource PrimarySoft}"
+                            StrokeThickness="0" Padding="8,2"
+                            VerticalOptions="Center">
+                        <Label Text="{Binding FamilyMembers.Count, StringFormat='+{0}'}"
+                               FontSize="11" FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource Primary}" />
+                    </Border>
+                </Grid>
+
+                <ScrollView Orientation="Horizontal"
+                            HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout Spacing="8"
+                                           BindableLayout.ItemsSource="{Binding FamilyMembers}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:Customer">
+                                <Border StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{StaticResource WarningSoft}"
+                                        Stroke="#F59E0B" StrokeThickness="1"
+                                        Padding="10,6">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewFamilyMemberCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                        <Border WidthRequest="28" HeightRequest="28"
+                                                StrokeShape="RoundRectangle 14"
+                                                Background="{StaticResource AvatarGradient}"
+                                                StrokeThickness="0"
+                                                VerticalOptions="Center">
+                                            <Label FontFamily="OpenSansSemibold" FontSize="11"
+                                                   TextColor="{StaticResource Primary}"
+                                                   HorizontalOptions="Center" VerticalOptions="Center"
+                                                   Text="{Binding Name, Converter={StaticResource InitialsConverter}}" />
+                                        </Border>
+                                        <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}"
+                                                   FontSize="13" FontFamily="OpenSansSemibold"
+                                                   TextColor="#B45309" />
+                                            <Label Text="{Binding Phone}"
+                                                   FontSize="10"
+                                                   TextColor="{StaticResource HintText}" />
+                                        </VerticalStackLayout>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- ═══════════════ ORDERS LIST ═══════════════ -->
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Orders}"
+                        Margin="16,10,16,16">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center"
+                                     Spacing="14" Padding="32,60">
+                    <Border WidthRequest="86" HeightRequest="86"
+                            StrokeShape="RoundRectangle 43"
+                            Background="{StaticResource AvatarGradient}"
+                            StrokeThickness="0"
+                            HorizontalOptions="Center">
+                        <Label Text="&#x1F4CB;" FontSize="38"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Text="{Binding L.NoOrdersYetLabel}"
+                           FontFamily="OpenSansSemibold" FontSize="18"
+                           TextColor="{StaticResource PrimaryText}"
+                           HorizontalOptions="Center" />
+                    <Label Text="{Binding L.TapAddOrderHint}"
+                           FontSize="13" TextColor="{StaticResource SubtleText}"
+                           HorizontalTextAlignment="Center" MaximumWidthRequest="320" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:OrderSummaryItem">
+                    <!--
+                        SwipeView wraps the entire order card so touch users get a
+                        one-gesture shortcut for the two most repetitive actions:
+                        swipe-left reveals "Advance →" (green, admin-only, gated
+                        on CanAdvance so completed orders can't be pushed
+                        further), and swipe-right reveals "Repeat" (indigo,
+                        admin-only, clones the order). Every existing tap button
+                        on the card stays intact for mouse / stylus users.
+
+                        BindingContext of a SwipeItemView is a full VisualElement
+                        so it inherits the DataTemplate's OrderSummaryItem —
+                        that's why the Invoked handlers below can reuse the same
+                        Fire(sender, command) plumbing as the tap handlers.
+                    -->
+                    <SwipeView Margin="0,6" Threshold="80">
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Reveal">
+                                <SwipeItemView Invoked="OnSwipeAdvance"
+                                               WidthRequest="112"
+                                               IsVisible="{Binding CanAdvance}">
+                                    <Border BackgroundColor="#10B981"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 16">
+                                        <VerticalStackLayout HorizontalOptions="Center"
+                                                             VerticalOptions="Center"
+                                                             Spacing="2">
+                                            <Label Text="&#x2192;" FontSize="22"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center" />
+                                            <Label Text="{Binding L.AdvanceLabel}"
+                                                   FontSize="11"
+                                                   FontFamily="OpenSansSemibold"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </SwipeItemView>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+                        <SwipeView.LeftItems>
+                            <SwipeItems Mode="Reveal">
+                                <SwipeItemView Invoked="OnSwipeRepeat"
+                                               WidthRequest="112"
+                                               IsVisible="{Binding Auth.CanManageCustomers}">
+                                    <Border BackgroundColor="#4F46E5"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 16">
+                                        <VerticalStackLayout HorizontalOptions="Center"
+                                                             VerticalOptions="Center"
+                                                             Spacing="2">
+                                            <Label Text="&#x1F504;" FontSize="20"
+                                                   HorizontalOptions="Center" />
+                                            <Label Text="{Binding L.RepeatLabel}"
+                                                   FontSize="11"
+                                                   FontFamily="OpenSansSemibold"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </SwipeItemView>
+                            </SwipeItems>
+                        </SwipeView.LeftItems>
+
+                        <!-- No Shadow inside virtualized items — depth from stroke only. -->
+                        <Border Padding="0"
+                                StrokeShape="RoundRectangle 16"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                                Stroke="{AppThemeBinding Light={StaticResource CardStroke}, Dark={StaticResource CardStrokeDark}}"
+                                StrokeThickness="1">
+
+                            <VerticalStackLayout Spacing="0">
+
+                            <!-- Card header: order # + date + rush/stuck chips + status pill.
+                                 The two urgency chips (rush, stuck) sit on their own row so
+                                 they don't push the status pill off the card on narrow screens. -->
+                            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto"
+                                  ColumnSpacing="12" RowSpacing="8" Padding="18,16,18,12">
+                                <Border Grid.Row="0" Grid.Column="0" Grid.RowSpan="2"
+                                        WidthRequest="4" HeightRequest="36"
+                                        StrokeShape="RoundRectangle 2"
+                                        BackgroundColor="{Binding StatusColor}"
+                                        StrokeThickness="0" VerticalOptions="Center" />
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding OrderNumber}"
+                                           FontFamily="OpenSansSemibold" FontSize="16"
+                                           TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                                    <Label Text="{Binding DateLabel}"
+                                           FontSize="12" TextColor="{StaticResource SubtleText}" />
+                                </VerticalStackLayout>
+                                <Border Grid.Row="0" Grid.Column="2"
+                                        Padding="10,4"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{Binding StatusColor}"
+                                        StrokeThickness="0" VerticalOptions="Center">
+                                    <Label Text="{Binding StatusLabel}"
+                                           FontSize="11" TextColor="White"
+                                           FontFamily="OpenSansSemibold" />
+                                </Border>
+
+                                <!-- Row 1: urgency chips (rush + stuck + overdue). Row collapses
+                                     itself when none are visible thanks to Auto-sized rows. -->
+                                <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                                                       Spacing="6" VerticalOptions="Center">
+                                    <!-- Rush chip: red flag -->
+                                    <Border IsVisible="{Binding IsRush}"
+                                            Padding="8,3"
+                                            StrokeShape="RoundRectangle 10"
+                                            BackgroundColor="#DC2626"
+                                            StrokeThickness="0" VerticalOptions="Center">
+                                        <Label FontSize="10" TextColor="White" FontFamily="OpenSansSemibold">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="&#x1F6A9; " />
+                                                    <Span Text="{Binding L.RushLabel}" />
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                    </Border>
+                                    <!-- Overdue chip: purple, only when past due -->
+                                    <Border IsVisible="{Binding IsOverdue}"
+                                            Padding="8,3"
+                                            StrokeShape="RoundRectangle 10"
+                                            BackgroundColor="#8B5CF6"
+                                            StrokeThickness="0" VerticalOptions="Center">
+                                        <Label Text="{Binding L.OverdueLabel}"
+                                               FontSize="10" TextColor="White" FontFamily="OpenSansSemibold" />
+                                    </Border>
+                                    <!-- Stuck chip: amber, only after 3-day threshold -->
+                                    <Border IsVisible="{Binding ShowStuckChip}"
+                                            Padding="8,3"
+                                            StrokeShape="RoundRectangle 10"
+                                            BackgroundColor="#F59E0B"
+                                            StrokeThickness="0" VerticalOptions="Center">
+                                        <Label Text="{Binding StuckDaysDisplay}"
+                                               FontSize="10" TextColor="White" FontFamily="OpenSansSemibold" />
+                                    </Border>
+                                </HorizontalStackLayout>
+                            </Grid>
+
+                            <BoxView HeightRequest="1"
+                                     BackgroundColor="{StaticResource DividerLine}"
+                                     Margin="18,0" />
+
+                            <!-- Status stepper. Uses BoxView with CornerRadius instead of Ellipse:
+                                 Microsoft.UI.Xaml shape renderer crashes (0xc000027b) with
+                                 Ellipse inside virtualised CollectionView item templates on WinUI 3. -->
+                            <Grid Padding="18,14,18,10" ColumnDefinitions="*,Auto">
+                                <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                    <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6"
+                                             Color="{Binding Step0Done, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#64748B|#E2E8F0'}" />
+                                    <BoxView HeightRequest="2" WidthRequest="18" Color="#E2E8F0" VerticalOptions="Center"/>
+                                    <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6"
+                                             Color="{Binding Step1Done, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#F59E0B|#E2E8F0'}" />
+                                    <BoxView HeightRequest="2" WidthRequest="18" Color="#E2E8F0" VerticalOptions="Center"/>
+                                    <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6"
+                                             Color="{Binding Step2Done, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#3B82F6|#E2E8F0'}" />
+                                    <BoxView HeightRequest="2" WidthRequest="18" Color="#E2E8F0" VerticalOptions="Center"/>
+                                    <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6"
+                                             Color="{Binding Step3Done, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#10B981|#E2E8F0'}" />
+                                    <BoxView HeightRequest="2" WidthRequest="18" Color="#E2E8F0" VerticalOptions="Center"/>
+                                    <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6"
+                                             Color="{Binding Step4Done, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#7C3AED|#E2E8F0'}" />
+                                </HorizontalStackLayout>
+                                <Border Grid.Column="1"
+                                        IsVisible="{Binding CanAdvance}"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{StaticResource PrimarySoft}"
+                                        StrokeThickness="0"
+                                        Padding="10,5">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnAdvanceStatus" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                        <Label Text="{Binding L.AdvanceLabel}" FontSize="11" FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                        <Label Text="&#x2192;" FontSize="12"
+                                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </Grid>
+
+                            <!-- Info block: due date + full measurement dump + notes -->
+                            <VerticalStackLayout Padding="18,4,18,14" Spacing="12">
+
+                                <!-- Due date -->
+                                <HorizontalStackLayout Spacing="6">
+                                    <Label Text="&#x1F69A;" FontSize="12" VerticalOptions="Center" Opacity="0.75" />
+                                    <Label FontSize="12" VerticalOptions="Center">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding L.DuePrefix}" TextColor="{StaticResource SubtleText}" />
+                                                <Span Text="{Binding DueDateLabel}" FontFamily="OpenSansSemibold"
+                                                      TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                </HorizontalStackLayout>
+
+                                <!-- ── SHIRT MEASUREMENTS (all 8 fields) ── -->
+                                <VerticalStackLayout Spacing="6" IsVisible="{Binding HasShirtMeasurements}">
+                                    <Label Text="{Binding L.ShirtMeasurementsLabel}"
+                                           FontFamily="OpenSansSemibold" FontSize="11"
+                                           CharacterSpacing="1.2"
+                                           TextColor="{StaticResource SubtleText}" />
+                                    <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto"
+                                          ColumnSpacing="6" RowSpacing="6">
+                                        <!-- Row 1 -->
+                                        <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.LengthLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding ShirtLengthDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.ChestLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding ShirtChestDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.WaistLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding ShirtWaistDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="3" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.HipLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding ShirtHipDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <!-- Row 2 -->
+                                        <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.ShoulderLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding ShirtShoulderDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.SleeveLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding ShirtSleeveDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.CuffLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding ShirtCuffDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="3" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.CollarLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding ShirtCollarDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </Grid>
+                                </VerticalStackLayout>
+
+                                <!-- ── PANT MEASUREMENTS (all 7 fields) ── -->
+                                <VerticalStackLayout Spacing="6" IsVisible="{Binding HasPantMeasurements}">
+                                    <Label Text="{Binding L.PantMeasurementsLabel}"
+                                           FontFamily="OpenSansSemibold" FontSize="11"
+                                           CharacterSpacing="1.2"
+                                           TextColor="{StaticResource SubtleText}" />
+                                    <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto"
+                                          ColumnSpacing="6" RowSpacing="6">
+                                        <!-- Row 1 -->
+                                        <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.LengthLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding PantLengthDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.WaistLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding PantWaistDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.HipLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding PantHipDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="3" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.ThighLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding PantThighDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <!-- Row 2 -->
+                                        <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.KneeLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding PantKneeDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.AnkleLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding PantAnkleDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource MeasureChip}">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Label Text="{Binding L.SeatLabel}"
+                                                       Style="{StaticResource MeasureChipLabel}" />
+                                                <Label Text="{Binding PantSeatDisplay}"
+                                                       Style="{StaticResource MeasureChipValue}" />
+                                            </VerticalStackLayout>
+                                        </Border>
+                                        <!-- 4th cell empty for symmetry — leave blank -->
+                                    </Grid>
+                                </VerticalStackLayout>
+
+                                <!-- ── NOTES ── -->
+                                <VerticalStackLayout Spacing="4" IsVisible="{Binding HasNotes}">
+                                    <Label Text="{Binding L.NotesLabel}"
+                                           FontFamily="OpenSansSemibold" FontSize="11"
+                                           CharacterSpacing="1.2"
+                                           TextColor="{StaticResource SubtleText}" />
+                                    <Border StrokeShape="RoundRectangle 8"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource ElevatedSurfaceDark}}"
+                                            StrokeThickness="0" Padding="12,10">
+                                        <Label Text="{Binding Notes}"
+                                               FontSize="13"
+                                               LineBreakMode="WordWrap"
+                                               TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                                    </Border>
+                                </VerticalStackLayout>
+
+                                <!-- ── PAYMENT (Phase 8) ── -->
+                                <!-- Whole block hidden when the order has no pricing at all
+                                     so pre-Phase-8 orders don't display a scary "₹0 owed" chip. -->
+                                <VerticalStackLayout Spacing="6" IsVisible="{Binding HasPricing}">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <Label Grid.Column="0" Text="{Binding L.PricingSection}"
+                                               FontFamily="OpenSansSemibold" FontSize="11"
+                                               CharacterSpacing="1.2"
+                                               TextColor="{StaticResource SubtleText}"
+                                               VerticalOptions="Center" />
+                                        <Border Grid.Column="1"
+                                                Padding="10,3"
+                                                StrokeShape="RoundRectangle 10"
+                                                BackgroundColor="{Binding PaymentStatusColor}"
+                                                StrokeThickness="0"
+                                                VerticalOptions="Center">
+                                            <Label Text="{Binding PaymentStatusLabel}"
+                                                   FontSize="10" TextColor="White"
+                                                   FontFamily="OpenSansSemibold" />
+                                        </Border>
+                                    </Grid>
+                                    <Border StrokeShape="RoundRectangle 8"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource ElevatedSurfaceDark}}"
+                                            StrokeThickness="0" Padding="12,10">
+                                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                                <Label Text="{Binding L.GrandTotalLabel}"
+                                                       FontSize="10" TextColor="{StaticResource SubtleText}" />
+                                                <Label Text="{Binding GrandTotalDisplay}"
+                                                       FontFamily="OpenSansSemibold" FontSize="13" />
+                                            </VerticalStackLayout>
+                                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                                <Label Text="{Binding L.AdvancePaidLabel}"
+                                                       FontSize="10" TextColor="{StaticResource SubtleText}" />
+                                                <Label Text="{Binding AdvancePaidDisplay}"
+                                                       FontFamily="OpenSansSemibold" FontSize="13" />
+                                            </VerticalStackLayout>
+                                            <VerticalStackLayout Grid.Column="2" Spacing="2">
+                                                <Label Text="{Binding L.BalanceDueLabel}"
+                                                       FontSize="10" TextColor="{StaticResource SubtleText}" />
+                                                <Label Text="{Binding BalanceDueDisplay}"
+                                                       FontFamily="OpenSansSemibold" FontSize="13"
+                                                       TextColor="{Binding PaymentStatusColor}" />
+                                            </VerticalStackLayout>
+                                        </Grid>
+                                    </Border>
+                                </VerticalStackLayout>
+
+                            </VerticalStackLayout>
+
+                            <BoxView HeightRequest="1"
+                                     BackgroundColor="{StaticResource DividerLine}"
+                                     Margin="18,0" />
+
+                            <!-- Action toolbar. FlexLayout wraps instead of scrolling because
+                                 nested horizontal ScrollView inside a virtualised CollectionView
+                                 item routinely crashes Microsoft.UI.Xaml on Windows. -->
+                            <FlexLayout Padding="14,10,14,14"
+                                        Direction="Row" Wrap="Wrap"
+                                        AlignItems="Center" JustifyContent="Start">
+                                <FlexLayout.Resources>
+                                    <Thickness x:Key="ActionMargin">0,0,8,8</Thickness>
+                                </FlexLayout.Resources>
+
+                                <!-- Edit (admin-only) -->
+                                <Border StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="{StaticResource Primary}"
+                                        StrokeThickness="0" Padding="12,7"
+                                        Margin="{StaticResource ActionMargin}"
+                                        IsVisible="{Binding Auth.CanEditOrders}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnEditOrder" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Label Text="&#x270E;" FontSize="12" TextColor="White" VerticalOptions="Center" />
+                                        <Label Text="{Binding L.EditLabel}" FontSize="12" FontFamily="OpenSansSemibold" TextColor="White" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <!-- Repeat (admin-only: creates a new order) -->
+                                <Border StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="Transparent"
+                                        Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                                        Padding="12,7"
+                                        Margin="{StaticResource ActionMargin}"
+                                        IsVisible="{Binding Auth.CanManageCustomers}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnRepeatOrder" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Label Text="&#x1F504;" FontSize="12" VerticalOptions="Center" />
+                                        <Label Text="{Binding L.RepeatLabel}" FontSize="12" FontFamily="OpenSansSemibold"
+                                               TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                               VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <!-- Assign (admin-only: pick employee for each stage) -->
+                                <Border StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="{StaticResource PrimarySoft}"
+                                        StrokeThickness="0" Padding="12,7"
+                                        Margin="{StaticResource ActionMargin}"
+                                        IsVisible="{Binding Auth.CanManageCustomers}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnAssignOrder" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Label Text="&#x1F465;" FontSize="12"
+                                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                        <Label Text="{Binding L.AssignLabel}"
+                                               FontSize="12" FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <!-- Invoice PDF — admin-only + only when order is Ready/Delivered (Phase 9) -->
+                                <Border IsVisible="{Binding CanGenerateInvoice}"
+                                        StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="{StaticResource Primary}"
+                                        StrokeThickness="0"
+                                        Padding="12,7"
+                                        Margin="{StaticResource ActionMargin}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnPrintPdf" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Label Text="&#x1F9FE;" FontSize="12" VerticalOptions="Center" />
+                                        <Label Text="{Binding L.GenerateInvoiceLabel}" FontSize="12" FontFamily="OpenSansSemibold"
+                                               TextColor="White" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <!-- QR -->
+                                <Border StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="Transparent"
+                                        Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                                        Padding="12,7"
+                                        Margin="{StaticResource ActionMargin}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnShowQr" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Label Text="&#x1F4F1;" FontSize="12" VerticalOptions="Center" />
+                                        <Label Text="{Binding L.QrLabel}" FontSize="12" FontFamily="OpenSansSemibold"
+                                               TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                               VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <!-- JSON -->
+                                <Border StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="Transparent"
+                                        Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                                        Padding="12,7"
+                                        Margin="{StaticResource ActionMargin}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnExportJson" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Label Text="&#x1F4E4;" FontSize="12" VerticalOptions="Center" />
+                                        <Label Text="{Binding L.JsonLabel}" FontSize="12" FontFamily="OpenSansSemibold"
+                                               TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                               VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <!-- WhatsApp (only when ready) -->
+                                <Border IsVisible="{Binding IsReady}"
+                                        StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="#25D366"
+                                        StrokeThickness="0" Padding="12,7"
+                                        Margin="{StaticResource ActionMargin}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSendReadyAlert" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Label Text="&#x1F4AC;" FontSize="12" VerticalOptions="Center" />
+                                        <Label Text="{Binding L.NotifyLabel}" FontSize="12" FontFamily="OpenSansSemibold"
+                                               TextColor="White" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <!-- Payment reminder (only when balance > 0) -->
+                                <Border IsVisible="{Binding CanSendPaymentReminder}"
+                                        StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="#F59E0B"
+                                        StrokeThickness="0" Padding="12,7"
+                                        Margin="{StaticResource ActionMargin}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSendPaymentReminder" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Label Text="&#x1F4B0;" FontSize="12" VerticalOptions="Center" />
+                                        <Label Text="{Binding L.SendReminderLabel}" FontSize="12" FontFamily="OpenSansSemibold"
+                                               TextColor="White" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+
+                                <!-- Delete (admin-only) -->
+                                <Border StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="Transparent"
+                                        Stroke="{StaticResource DangerRed}" StrokeThickness="1"
+                                        Padding="12,7"
+                                        Margin="{StaticResource ActionMargin}"
+                                        IsVisible="{Binding Auth.CanDeleteOrders}">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnDeleteOrder" />
+                                    </Border.GestureRecognizers>
+                                    <HorizontalStackLayout Spacing="5">
+                                        <Label Text="&#x1F5D1;" FontSize="12" VerticalOptions="Center" />
+                                        <Label Text="{Binding L.DeleteLabel}" FontSize="12" FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource DangerRed}" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </FlexLayout>
+
+                            </VerticalStackLayout>
+                        </Border>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  App-icon foreground (v7 — bold "T" ruler mark).
+
+  Design:
+    ● A white bold rounded "T" — reads as the letter for TapeTracker AND
+      as a ruler / measuring rod. The crossbar suggests the L-hook at
+      the start of every retracting measuring tape.
+    ● Four short tick marks along the LEFT side of the stem sell the
+      "ruler" reading without cluttering — they disappear cleanly at
+      small sizes, leaving a bold T which is still on-brand.
+    ● Pure white on the brand gradient background — highest contrast,
+      no color mixing, prints and scales perfectly.
+    ● Safe zone: glyph fits inside a 300×300 box centered on 228×228 so
+      it survives WinUI's ~10% tile-crop on Live Tiles without clipping.
+
+  Everything is a rectangle or rounded-corner rectangle so SkiaSharp
+  rasterizes the same on every MAUI target.
+-->
+<svg width="456" height="456" viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Slight cream tint so the "white" doesn't glare against the deep
+         purple; still reads as white but sits softer on the eye. -->
+    <linearGradient id="glyphInk" x1="0" y1="80" x2="0" y2="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F5F3FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ═══════════════ CROSSBAR (top of the T) ═══════════════ -->
+  <!-- Rounded rectangle; the "hook" hint at each end is achieved by the
+       rounded corners visually curling downwards. -->
+  <rect x="86" y="102" width="284" height="60" rx="22" ry="22"
+        fill="url(#glyphInk)"/>
+
+  <!-- Small downward tabs at each crossbar end — these are the tape-hook
+       accent. Kept subtle (16×22 rounded) so at 16 px they disappear
+       into the crossbar edge, and at 128 px+ they hint at the L-hook. -->
+  <rect x="94"  y="150" width="18" height="26" rx="6" ry="6" fill="url(#glyphInk)"/>
+  <rect x="344" y="150" width="18" height="26" rx="6" ry="6" fill="url(#glyphInk)"/>
+
+  <!-- ═══════════════ STEM ═══════════════ -->
+  <rect x="200" y="152" width="56" height="222" rx="20" ry="20"
+        fill="url(#glyphInk)"/>
+
+  <!-- ═══════════════ RULER TICK MARKS ═══════════════ -->
+  <!-- Four short ticks on the LEFT side of the stem; positioned to feel
+       like an inch-ruler. Only rendered at moderate sizes (they collapse
+       into the stem edge below ~40 px, which is fine — the T still reads). -->
+  <g fill="url(#glyphInk)">
+    <rect x="168" y="200" width="26" height="10" rx="4" ry="4"/>
+    <rect x="176" y="240" width="18" height="10" rx="4" ry="4"/>
+    <rect x="168" y="280" width="26" height="10" rx="4" ry="4"/>
+    <rect x="176" y="320" width="18" height="10" rx="4" ry="4"/>
+  </g>
+</svg>

@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             x:Class="TapeTracker.Views.DeliveryCalendarPage"
+             x:DataType="vm:DeliveryCalendarViewModel"
+             Title="{Binding L.DeliveryCalendarLabel}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{Binding L.CalendarTodayLabel}" Command="{Binding GoToTodayCommand}" Order="Primary" />
+        <ToolbarItem Text="{Binding L.RefreshLabel}"       Command="{Binding LoadCommand}"     Order="Secondary" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+        <!-- ═══════════════ HEADER ═══════════════ -->
+        <Border Grid.Row="0" StrokeThickness="0" Padding="20,20,20,18">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4F46E5" Offset="0.0" />
+                    <GradientStop Color="#6D28D9" Offset="0.55" />
+                    <GradientStop Color="#DB2777" Offset="1.0" />
+                </LinearGradientBrush>
+            </Border.Background>
+
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
+
+                <!-- Prev month -->
+                <Border Grid.Column="0"
+                        WidthRequest="40" HeightRequest="40"
+                        StrokeShape="RoundRectangle 20"
+                        BackgroundColor="#33FFFFFF"
+                        Stroke="#55FFFFFF" StrokeThickness="1"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding PrevMonthCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="&#x2039;" FontSize="22" TextColor="White"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+
+                <VerticalStackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="{Binding L.DeliveryCalendarLabel}"
+                           FontSize="11" TextColor="#E0E7FF" CharacterSpacing="2"
+                           HorizontalOptions="Center" />
+                    <Label Text="{Binding MonthHeader}"
+                           FontFamily="OpenSansSemibold" FontSize="22" TextColor="White"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- Next month -->
+                <Border Grid.Column="2"
+                        WidthRequest="40" HeightRequest="40"
+                        StrokeShape="RoundRectangle 20"
+                        BackgroundColor="#33FFFFFF"
+                        Stroke="#55FFFFFF" StrokeThickness="1"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding NextMonthCommand}" />
+                    </Border.GestureRecognizers>
+                    <Label Text="&#x203A;" FontSize="22" TextColor="White"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════ WEEKDAY ROW ═══════════════ -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*,*,*,*"
+              BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+              Padding="8,10">
+            <Label Grid.Column="0" Text="Sun" FontSize="11" FontFamily="OpenSansSemibold"
+                   HorizontalOptions="Center" TextColor="{StaticResource SubtleText}" />
+            <Label Grid.Column="1" Text="Mon" FontSize="11" FontFamily="OpenSansSemibold"
+                   HorizontalOptions="Center" TextColor="{StaticResource SubtleText}" />
+            <Label Grid.Column="2" Text="Tue" FontSize="11" FontFamily="OpenSansSemibold"
+                   HorizontalOptions="Center" TextColor="{StaticResource SubtleText}" />
+            <Label Grid.Column="3" Text="Wed" FontSize="11" FontFamily="OpenSansSemibold"
+                   HorizontalOptions="Center" TextColor="{StaticResource SubtleText}" />
+            <Label Grid.Column="4" Text="Thu" FontSize="11" FontFamily="OpenSansSemibold"
+                   HorizontalOptions="Center" TextColor="{StaticResource SubtleText}" />
+            <Label Grid.Column="5" Text="Fri" FontSize="11" FontFamily="OpenSansSemibold"
+                   HorizontalOptions="Center" TextColor="{StaticResource SubtleText}" />
+            <Label Grid.Column="6" Text="Sat" FontSize="11" FontFamily="OpenSansSemibold"
+                   HorizontalOptions="Center" TextColor="{StaticResource SubtleText}" />
+        </Grid>
+
+        <!-- ═══════════════ LEGEND ═══════════════ -->
+        <HorizontalStackLayout Grid.Row="2" Spacing="12" Padding="16,10,16,4">
+            <HorizontalStackLayout Spacing="4">
+                <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5" Color="#DC2626" VerticalOptions="Center" />
+                <Label Text="{Binding L.RushLabel}" FontSize="10" TextColor="{StaticResource SubtleText}" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="4">
+                <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5" Color="#8B5CF6" VerticalOptions="Center" />
+                <Label Text="{Binding L.OverdueLabel}" FontSize="10" TextColor="{StaticResource SubtleText}" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="4">
+                <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5" Color="#F59E0B" VerticalOptions="Center" />
+                <Label Text="{Binding L.LegendOnTrackLabel}" FontSize="10" TextColor="{StaticResource SubtleText}" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="4">
+                <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5" Color="#94A3B8" VerticalOptions="Center" />
+                <Label Text="{Binding L.LegendDeliveredLabel}" FontSize="10" TextColor="{StaticResource SubtleText}" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </HorizontalStackLayout>
+
+        <!-- ═══════════════ CALENDAR GRID ═══════════════ -->
+        <!-- CollectionView with GridItemsLayout keeps the 7-column grid crisp
+             even on narrow windows. Each cell is a self-contained composite. -->
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding Cells}"
+                        Margin="8,4,8,4"
+                        SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="7" HorizontalItemSpacing="4" VerticalItemSpacing="4" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:CalendarDayCell">
+                    <Border StrokeShape="RoundRectangle 8"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{Binding TodayHighlightColor}"
+                            StrokeThickness="0"
+                            MinimumHeightRequest="90"
+                            Padding="6"
+                            Opacity="{Binding CellOpacity}">
+                        <Border.Triggers>
+                            <!-- Draw a 1.6-px indigo ring around today's cell.
+                                 Cleaner than a converter and reads naturally. -->
+                            <DataTrigger TargetType="Border" Binding="{Binding IsToday}" Value="True">
+                                <Setter Property="StrokeThickness" Value="1.6" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <VerticalStackLayout Spacing="3">
+
+                            <!-- Day number in the corner -->
+                            <Label Text="{Binding DayNumber}"
+                                   FontSize="11" FontFamily="OpenSansSemibold"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                   HorizontalOptions="End" />
+
+                            <!-- Order chips (max 3) -->
+                            <VerticalStackLayout Spacing="2" BindableLayout.ItemsSource="{Binding Chips}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:CalendarOrderChip">
+                                        <Border StrokeShape="RoundRectangle 4"
+                                                BackgroundColor="{Binding TintColor}"
+                                                StrokeThickness="0" Padding="4,2">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenOrderCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Border.GestureRecognizers>
+                                            <Label Text="{Binding ChipLabel}"
+                                                   FontSize="9" FontFamily="OpenSansSemibold"
+                                                   TextColor="White"
+                                                   LineBreakMode="TailTruncation" />
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+
+                            <!-- "+N more" overflow -->
+                            <Label Text="{Binding OverflowLabel}"
+                                   FontSize="9" TextColor="{StaticResource SubtleText}"
+                                   FontFamily="OpenSansSemibold"
+                                   IsVisible="{Binding HasOverflow}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- ═══════════════ FOOTER ═══════════════ -->
+        <Border Grid.Row="4"
+                BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                StrokeThickness="0" Padding="16,10">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Grid.Column="0"
+                       Text="{Binding MonthDeliveryCount, StringFormat='{0} delivery items'}"
+                       FontSize="12" TextColor="{StaticResource SubtleText}"
+                       VerticalOptions="Center"
+                       IsVisible="{Binding HasNoDeliveries, Converter={StaticResource InvertedBoolConverter}}" />
+                <Label Grid.Column="0"
+                       Text="{Binding L.NoDeliveriesLabel}"
+                       FontSize="12" TextColor="{StaticResource SubtleText}"
+                       VerticalOptions="Center"
+                       IsVisible="{Binding HasNoDeliveries}" />
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

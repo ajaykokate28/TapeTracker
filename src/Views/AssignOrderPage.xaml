@@ -1,0 +1,214 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             x:Class="TapeTracker.Views.AssignOrderPage"
+             x:DataType="vm:AssignOrderViewModel"
+             Title="{Binding L.AssignOrderTitle}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,40">
+
+            <!-- ═══════════════ HEADER ═══════════════ -->
+            <Border StrokeThickness="0" Padding="20,26,20,42">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4F46E5" Offset="0.0" />
+                        <GradientStop Color="#6D28D9" Offset="0.55" />
+                        <GradientStop Color="#DB2777" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                    <Border Grid.Column="0"
+                            WidthRequest="52" HeightRequest="52"
+                            StrokeShape="RoundRectangle 26"
+                            BackgroundColor="#33FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            VerticalOptions="Center">
+                        <Label Text="&#x1F4CB;" FontSize="24"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="{Binding L.AssignOrderTitle}"
+                               FontFamily="OpenSansSemibold" FontSize="20"
+                               TextColor="White" />
+                        <Label Text="{Binding L.AssignOrderSubtitle}"
+                               FontSize="12" TextColor="#E0E7FF" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- ═══════════════ ORDER SUMMARY CARD ═══════════════ -->
+            <Border Margin="16,-24,16,0"
+                    StrokeShape="RoundRectangle 16"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                    Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                    Padding="18,16">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,6" Radius="18" Opacity="0.06" />
+                </Border.Shadow>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="8">
+                    <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="2">
+                        <Label Text="{Binding L.OrderLabel}"
+                               FontSize="11" CharacterSpacing="1"
+                               TextColor="{StaticResource SubtleText}" />
+                        <Label Text="{Binding OrderNumber}"
+                               FontFamily="OpenSansSemibold" FontSize="18"
+                               TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                    </VerticalStackLayout>
+
+                    <!-- Status pill -->
+                    <Border Grid.Row="0" Grid.Column="1"
+                            StrokeShape="RoundRectangle 10"
+                            BackgroundColor="{StaticResource PrimarySoft}"
+                            StrokeThickness="0" Padding="10,4"
+                            VerticalOptions="Center">
+                        <Label Text="{Binding StatusLabel}" FontSize="11"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource Primary}" />
+                    </Border>
+
+                    <BoxView Grid.Row="1" Grid.ColumnSpan="2" HeightRequest="1"
+                             BackgroundColor="{StaticResource DividerLine}" Margin="0,4" />
+
+                    <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="{Binding L.CustomerFieldLabel}"
+                                   FontSize="10" CharacterSpacing="1"
+                                   TextColor="{StaticResource SubtleText}" />
+                            <Label Text="{Binding CustomerName}"
+                                   FontSize="14" FontFamily="OpenSansSemibold"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                   LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="{Binding L.DueLabel}"
+                                   FontSize="10" CharacterSpacing="1"
+                                   TextColor="{StaticResource SubtleText}" />
+                            <Label Text="{Binding DueDateLabel}"
+                                   FontSize="14" FontFamily="OpenSansSemibold"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- ═══════════════ NO-EMPLOYEES BANNER ═══════════════ -->
+            <Border Margin="16,14,16,0"
+                    StrokeShape="RoundRectangle 12"
+                    BackgroundColor="{StaticResource WarningSoft}"
+                    Stroke="{StaticResource WarningAmber}" StrokeThickness="1" Padding="14,12"
+                    IsVisible="{Binding HasEmployees, Converter={StaticResource InvertedBoolConverter}}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding L.NoActiveEmployeesTitle}"
+                           FontFamily="OpenSansSemibold" FontSize="14"
+                           TextColor="#B45309" />
+                    <Label Text="{Binding L.NoActiveEmployeesHint}"
+                           FontSize="12" TextColor="#78350F" LineBreakMode="WordWrap" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══════════════ SECTION TITLE ═══════════════ -->
+            <Label Text="{Binding L.StageLabel}"
+                   FontFamily="OpenSansSemibold" FontSize="11"
+                   CharacterSpacing="1.4"
+                   TextColor="{StaticResource SubtleText}"
+                   Margin="20,18,20,6"
+                   IsVisible="{Binding HasEmployees}" />
+
+            <!-- ═══════════════ STAGE ROWS ═══════════════ -->
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Stages}"
+                                 Spacing="10"
+                                 Padding="16,0,16,0"
+                                 IsVisible="{Binding HasEmployees}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:StageAssignmentRow">
+                        <Border StrokeShape="RoundRectangle 14"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                                Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                                Padding="14,12">
+                            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="10" RowSpacing="8">
+                                <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="10" VerticalOptions="Center">
+                                    <Border WidthRequest="10" HeightRequest="10"
+                                            StrokeShape="RoundRectangle 5"
+                                            BackgroundColor="{StaticResource Primary}"
+                                            StrokeThickness="0"
+                                            VerticalOptions="Center" />
+                                    <Label Text="{Binding StageLabel}"
+                                           FontFamily="OpenSansSemibold" FontSize="15"
+                                           TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                           VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+
+                                <Border Grid.Row="0" Grid.Column="1"
+                                        StrokeShape="RoundRectangle 8"
+                                        BackgroundColor="#DCFCE7"
+                                        StrokeThickness="0" Padding="8,3"
+                                        VerticalOptions="Center"
+                                        IsVisible="{Binding IsCompleted}">
+                                    <Label Text="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.L.CompleteShortLabel}"
+                                           FontSize="10" FontFamily="OpenSansSemibold"
+                                           TextColor="#166534" />
+                                </Border>
+
+                                <Border Grid.Row="1" Grid.ColumnSpan="2"
+                                        StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="{AppThemeBinding Light={StaticResource EntrySurface}, Dark={StaticResource EntrySurfaceDark}}"
+                                        Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                                        Padding="8,0">
+                                    <Picker ItemsSource="{Binding Employees}"
+                                            ItemDisplayBinding="{Binding DisplayName}"
+                                            SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}"
+                                            Title="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.L.PickEmployeeLabel}"
+                                            FontSize="14"
+                                            TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <!-- Error banner -->
+            <Border IsVisible="{Binding HasError}"
+                    Margin="16,14,16,0"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="{StaticResource DangerSoft}"
+                    Stroke="{StaticResource DangerRed}" StrokeThickness="1"
+                    Padding="12,10">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="&#x26A0;" FontSize="14"
+                           TextColor="{StaticResource DangerRed}" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="{Binding ErrorMessage}"
+                           FontSize="12" TextColor="{StaticResource DangerRed}"
+                           VerticalOptions="Center" LineBreakMode="WordWrap" />
+                </Grid>
+            </Border>
+
+            <!-- ═══════════════ ACTIONS ═══════════════ -->
+            <Grid Margin="16,20,16,0" ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0"
+                        Text="{Binding L.CancelLabel}"
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource Primary}"
+                        BorderColor="{StaticResource Primary}"
+                        BorderWidth="1"
+                        HeightRequest="50" CornerRadius="12"
+                        FontFamily="OpenSansSemibold" FontSize="15" />
+                <Button Grid.Column="1"
+                        Text="{Binding L.SaveAssignmentsLabel}"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="{Binding IsNotBusy}"
+                        HeightRequest="50" CornerRadius="12"
+                        FontFamily="OpenSansSemibold" FontSize="15" />
+            </Grid>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="{StaticResource Primary}"
+                               HorizontalOptions="Center" Margin="0,14,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

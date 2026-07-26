@@ -1,0 +1,77 @@
+# ---------- Build output ----------
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+[Bb]uild/
+[Bb]uildLog.*
+msbuild.log
+msbuild.err
+msbuild.wrn
+*.binlog
+
+# ---------- .NET / MSBuild ----------
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ---------- IDE folders ----------
+.vs/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ---------- .NET MAUI / mobile ----------
+# Android
+*.apk
+*.aab
+*.keystore
+local.properties
+# iOS / Mac
+*.ipa
+*.dSYM/
+*.app
+# Windows / WinUI
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+*.msixupload
+*.appxupload
+*.pfx
+AppPackages/
+BundleArtifacts/
+
+# ---------- SQLite databases (runtime data) ----------
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
+# ---------- OS junk ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Test/coverage results ----------
+[Tt]est[Rr]esult*/
+coverage/
+*.coverage
+*.coveragexml
+
+# ---------- Misc ----------
+*.zip
+*.7z
+*.tar.gz

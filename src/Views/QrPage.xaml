@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             x:Class="TapeTracker.Views.QrPage"
+             x:DataType="vm:QrViewModel"
+             Title="{Binding Title}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{Binding L.ShareLabel}" Command="{Binding ShareCommand}" Order="Primary" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,32">
+
+            <!-- ═══════════════ HEADER ═══════════════ -->
+            <Border StrokeThickness="0" Padding="20,20,20,32">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#4F46E5" Offset="0.0" />
+                        <GradientStop Color="#6D28D9" Offset="0.55" />
+                        <GradientStop Color="#DB2777" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                    <Border Grid.Column="0"
+                            WidthRequest="46" HeightRequest="46"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#33FFFFFF"
+                            Stroke="#55FFFFFF" StrokeThickness="1"
+                            VerticalOptions="Center">
+                        <Label Text="&#x1F4F1;" FontSize="20"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="{Binding L.OrderQrCodeLabel}"
+                               FontFamily="OpenSansSemibold" FontSize="20"
+                               TextColor="White" />
+                        <Label Text="{Binding L.ScanToOpenLabel}"
+                               FontSize="12" TextColor="#E0E7FF"
+                               CharacterSpacing="0.4" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- ═══════════════ QR CARD ═══════════════ -->
+            <Border Margin="20,-18,20,0"
+                    StrokeShape="RoundRectangle 20"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                    Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                    Padding="24,28">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,6" Radius="20" Opacity="0.08" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="14" HorizontalOptions="Center">
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       Color="{StaticResource Primary}"
+                                       HorizontalOptions="Center" />
+
+                    <Border WidthRequest="280" HeightRequest="280"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="White"
+                            StrokeThickness="0"
+                            IsVisible="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                            HorizontalOptions="Center">
+                        <Image Source="{Binding QrImage}"
+                               WidthRequest="256" HeightRequest="256"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               Aspect="AspectFit" />
+                    </Border>
+
+                    <Label Text="{Binding OrderNumber}"
+                           FontFamily="OpenSansSemibold" FontSize="16"
+                           TextColor="{StaticResource Primary}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══════════════ ORDER INFO ═══════════════ -->
+            <Border Margin="20,14,20,0"
+                    StrokeShape="RoundRectangle 16"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                    Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                    Padding="20,18">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.05" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="12">
+
+                    <Label Text="{Binding L.OrderDetailsLabel}" Style="{StaticResource SectionTitle}" />
+
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                        <Label Grid.Column="0" Text="{Binding L.CustomerFieldLabel}" FontSize="12"
+                               TextColor="{StaticResource SubtleText}" VerticalOptions="Center"
+                               WidthRequest="80" />
+                        <Label Grid.Column="1" Text="{Binding CustomerName}"
+                               FontFamily="OpenSansSemibold" FontSize="14"
+                               VerticalOptions="Center" />
+                    </Grid>
+                    <BoxView HeightRequest="1" BackgroundColor="{StaticResource DividerLine}" />
+
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                        <Label Grid.Column="0" Text="{Binding L.OrderNoFieldLabel}" FontSize="12"
+                               TextColor="{StaticResource SubtleText}" VerticalOptions="Center"
+                               WidthRequest="80" />
+                        <Label Grid.Column="1" Text="{Binding OrderNumber}"
+                               FontFamily="OpenSansSemibold" FontSize="14"
+                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                    </Grid>
+                    <BoxView HeightRequest="1" BackgroundColor="{StaticResource DividerLine}" />
+
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                        <Label Grid.Column="0" Text="{Binding L.StatusFieldLabel}" FontSize="12"
+                               TextColor="{StaticResource SubtleText}" VerticalOptions="Center"
+                               WidthRequest="80" />
+                        <Label Grid.Column="1" Text="{Binding StatusLabel}"
+                               FontFamily="OpenSansSemibold" FontSize="14" VerticalOptions="Center" />
+                    </Grid>
+                    <BoxView HeightRequest="1" BackgroundColor="{StaticResource DividerLine}" />
+
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                        <Label Grid.Column="0" Text="{Binding L.DateFieldLabel}" FontSize="12"
+                               TextColor="{StaticResource SubtleText}" VerticalOptions="Center"
+                               WidthRequest="80" />
+                        <Label Grid.Column="1" Text="{Binding DateLabel}"
+                               FontSize="14" VerticalOptions="Center" />
+                    </Grid>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══════════════ SHARE ACTION ═══════════════ -->
+            <Button Text="{Binding L.ShareQrCodeLabel}"
+                    Command="{Binding ShareCommand}"
+                    Margin="20,18,20,0"
+                    HeightRequest="52" CornerRadius="12"
+                    FontSize="15" FontFamily="OpenSansSemibold" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

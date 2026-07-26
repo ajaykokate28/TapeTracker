@@ -1,0 +1,742 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TapeTracker.ViewModels"
+             xmlns:models="clr-namespace:TapeTracker.Models"
+             xmlns:conv="clr-namespace:TapeTracker.Converters"
+             xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls"
+             x:Class="TapeTracker.Views.DashboardPage"
+             x:DataType="vm:DashboardViewModel"
+             Title="{Binding L.BusinessOverviewLabel}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ContentPage.ToolbarItems>
+        <!-- Export is admin-only (shop-wide data dump). PIN and Refresh work for everyone.
+             Employees + Activity toolbar entries are admin-only (management actions). -->
+        <ToolbarItem Text="{Binding L.ExportShortLabel}" Command="{Binding ExportAllCommand}"       Order="Primary"
+                     IsEnabled="{Binding Auth.CanExportOrBackup}" />
+        <ToolbarItem Text="{Binding L.EmployeesLabel}"   Command="{Binding OpenEmployeesCommand}"   Order="Secondary"
+                     IsEnabled="{Binding Auth.CanManageCustomers}" />
+        <ToolbarItem Text="{Binding L.ActivityLogTitle}" Command="{Binding OpenActivityLogCommand}" Order="Secondary"
+                     IsEnabled="{Binding Auth.CanSeeShopWideDashboard}" />
+        <ToolbarItem Text="{Binding L.BackupManagerTitle}" Command="{Binding OpenBackupCommand}"     Order="Secondary"
+                     IsEnabled="{Binding Auth.CanExportOrBackup}" />
+        <ToolbarItem Text="{Binding L.DeliveryCalendarLabel}" Command="{Binding OpenDeliveryCalendarCommand}" Order="Secondary" />
+        <ToolbarItem Text="{Binding L.ShopSettingsLabel}"    Command="{Binding OpenShopSettingsCommand}"    Order="Secondary"
+                     IsEnabled="{Binding Auth.CanManageCustomers}" />
+        <ToolbarItem Text="{Binding L.RefreshLabel}"     Command="{Binding RefreshCommand}"         Order="Secondary" />
+        <ToolbarItem Text="{Binding L.PinLabel}"         Command="{Binding OpenPinSettingsCommand}" Order="Secondary" />
+        <ToolbarItem Text="{Binding L.LogoutLabel}"      Command="{Binding LogoutCommand}"          Order="Secondary" />
+    </ContentPage.ToolbarItems>
+
+    <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}">
+        <ScrollView>
+            <VerticalStackLayout Spacing="0" Padding="0,0,0,32">
+
+                <!-- ═══════════════ HEADER ═══════════════ -->
+                <Border StrokeThickness="0" Padding="20,22,20,32">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#4F46E5" Offset="0.0" />
+                            <GradientStop Color="#6D28D9" Offset="0.55" />
+                            <GradientStop Color="#DB2777" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                        <Border Grid.Column="0"
+                                WidthRequest="46" HeightRequest="46"
+                                StrokeShape="RoundRectangle 12"
+                                BackgroundColor="#33FFFFFF"
+                                Stroke="#55FFFFFF" StrokeThickness="1"
+                                VerticalOptions="Center">
+                            <Label Text="&#x1F4CA;" FontSize="22"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <!-- Admin sees "Business Overview" (shop-wide dashboard);
+                                 employees see "My Work" (their assigned queue). Only one
+                                 of the two labels is visible at a time. -->
+                            <Label Text="{Binding L.BusinessOverviewLabel}"
+                                   FontFamily="OpenSansSemibold" FontSize="22"
+                                   TextColor="White"
+                                   IsVisible="{Binding Auth.CanSeeShopWideDashboard}" />
+                            <Label Text="{Binding L.MyWorkTitle}"
+                                   FontFamily="OpenSansSemibold" FontSize="22"
+                                   TextColor="White"
+                                   IsVisible="{Binding Auth.CanSeeShopWideDashboard, Converter={StaticResource InvertedBoolConverter}}" />
+                            <Label Text="{Binding L.AppSubtitle}"
+                                   FontSize="12" TextColor="#E0E7FF"
+                                   CharacterSpacing="0.4"
+                                   IsVisible="{Binding Auth.CanSeeShopWideDashboard}" />
+                            <Label Text="{Binding L.MyWorkSubtitle}"
+                                   FontSize="12" TextColor="#E0E7FF"
+                                   CharacterSpacing="0.4"
+                                   IsVisible="{Binding Auth.CanSeeShopWideDashboard, Converter={StaticResource InvertedBoolConverter}}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- ═══════════════ STAT CARDS 2×2 (admin-only: shop-wide numbers) ═══════════════ -->
+                <Grid Padding="16,-16,16,0"
+                      ColumnDefinitions="*,*"
+                      RowDefinitions="Auto,Auto"
+                      ColumnSpacing="12" RowSpacing="12"
+                      IsVisible="{Binding Auth.CanSeeShopWideDashboard}">
+
+                    <!-- Total Customers -->
+                    <Border Grid.Row="0" Grid.Column="0"
+                            StrokeShape="RoundRectangle 16"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="16">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.06" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="10">
+                            <Border WidthRequest="42" HeightRequest="42"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="{StaticResource PrimarySoft}"
+                                    StrokeThickness="0">
+                                <Label Text="&#x1F465;" FontSize="20"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Text="{Binding TotalCustomers}"
+                                   FontFamily="OpenSansSemibold" FontSize="28"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                            <Label Text="{Binding L.CustomersCountLabel}"
+                                   FontSize="12" CharacterSpacing="0.5"
+                                   TextColor="{StaticResource SubtleText}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Total Orders -->
+                    <Border Grid.Row="0" Grid.Column="1"
+                            StrokeShape="RoundRectangle 16"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="16">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.06" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="10">
+                            <Border WidthRequest="42" HeightRequest="42"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="#EDE9FE"
+                                    StrokeThickness="0">
+                                <Label Text="&#x1F4E6;" FontSize="20"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Text="{Binding TotalOrders}"
+                                   FontFamily="OpenSansSemibold" FontSize="28"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                            <Label Text="{Binding L.TotalOrdersLabel}"
+                                   FontSize="12" CharacterSpacing="0.5"
+                                   TextColor="{StaticResource SubtleText}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Due This Week -->
+                    <Border Grid.Row="1" Grid.Column="0"
+                            StrokeShape="RoundRectangle 16"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="16">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.06" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="10">
+                            <Border WidthRequest="42" HeightRequest="42"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="{StaticResource WarningSoft}"
+                                    StrokeThickness="0">
+                                <Label Text="&#x23F0;" FontSize="20"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Text="{Binding DueSoonOrders}"
+                                   FontFamily="OpenSansSemibold" FontSize="28"
+                                   TextColor="{StaticResource WarningAmber}" />
+                            <Label Text="{Binding L.DueThisWeekLabel}"
+                                   FontSize="12" CharacterSpacing="0.5"
+                                   TextColor="{StaticResource SubtleText}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Overdue -->
+                    <Border Grid.Row="1" Grid.Column="1"
+                            StrokeShape="RoundRectangle 16"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="16">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.06" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="10">
+                            <Border WidthRequest="42" HeightRequest="42"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="{StaticResource DangerSoft}"
+                                    StrokeThickness="0">
+                                <Label Text="&#x26A0;" FontSize="20"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Text="{Binding OverdueOrders}"
+                                   FontFamily="OpenSansSemibold" FontSize="28"
+                                   TextColor="{StaticResource DangerRed}" />
+                            <Label Text="{Binding L.OverdueLabel}"
+                                   FontSize="12" CharacterSpacing="0.5"
+                                   TextColor="{StaticResource SubtleText}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- ═══════════════ STATUS BREAKDOWN (admin-only) ═══════════════ -->
+                <Border Margin="16,16,16,0"
+                        StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="20,18"
+                        IsVisible="{Binding Auth.CanSeeShopWideDashboard}">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.06" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="14">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding L.OrderPipelineLabel}" Style="{StaticResource SectionTitle}" />
+                            <Label Text="{Binding L.StatusBreakdownLabel}"
+                                   FontFamily="OpenSansSemibold" FontSize="16"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                        </VerticalStackLayout>
+
+                        <Grid ColumnDefinitions="88,*,36" ColumnSpacing="10">
+                            <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                <BoxView WidthRequest="8" HeightRequest="8" CornerRadius="4" BackgroundColor="#64748B" VerticalOptions="Center" />
+                                <Label Text="{Binding L.StatusReceived}"  FontSize="12" TextColor="{StaticResource SubtleText}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <ProgressBar Grid.Column="1" Progress="{Binding ReceivedPct}"  ProgressColor="#64748B" VerticalOptions="Center" />
+                            <Label Grid.Column="2" Text="{Binding ReceivedCount}"  FontFamily="OpenSansSemibold" FontSize="12" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                        </Grid>
+                        <Grid ColumnDefinitions="88,*,36" ColumnSpacing="10">
+                            <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                <BoxView WidthRequest="8" HeightRequest="8" CornerRadius="4" BackgroundColor="#F59E0B" VerticalOptions="Center" />
+                                <Label Text="{Binding L.StatusCutting}"   FontSize="12" TextColor="{StaticResource SubtleText}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <ProgressBar Grid.Column="1" Progress="{Binding CuttingPct}"   ProgressColor="#F59E0B" VerticalOptions="Center" />
+                            <Label Grid.Column="2" Text="{Binding CuttingCount}"   FontFamily="OpenSansSemibold" FontSize="12" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                        </Grid>
+                        <Grid ColumnDefinitions="88,*,36" ColumnSpacing="10">
+                            <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                <BoxView WidthRequest="8" HeightRequest="8" CornerRadius="4" BackgroundColor="#3B82F6" VerticalOptions="Center" />
+                                <Label Text="{Binding L.StatusStitching}" FontSize="12" TextColor="{StaticResource SubtleText}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <ProgressBar Grid.Column="1" Progress="{Binding StitchingPct}" ProgressColor="#3B82F6" VerticalOptions="Center" />
+                            <Label Grid.Column="2" Text="{Binding StitchingCount}" FontFamily="OpenSansSemibold" FontSize="12" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                        </Grid>
+                        <Grid ColumnDefinitions="88,*,36" ColumnSpacing="10">
+                            <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                <BoxView WidthRequest="8" HeightRequest="8" CornerRadius="4" BackgroundColor="#10B981" VerticalOptions="Center" />
+                                <Label Text="{Binding L.StatusReady}"     FontSize="12" TextColor="{StaticResource SubtleText}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <ProgressBar Grid.Column="1" Progress="{Binding ReadyPct}"     ProgressColor="#10B981" VerticalOptions="Center" />
+                            <Label Grid.Column="2" Text="{Binding ReadyCount}"     FontFamily="OpenSansSemibold" FontSize="12" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                        </Grid>
+                        <Grid ColumnDefinitions="88,*,36" ColumnSpacing="10">
+                            <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                <BoxView WidthRequest="8" HeightRequest="8" CornerRadius="4" BackgroundColor="#7C3AED" VerticalOptions="Center" />
+                                <Label Text="{Binding L.StatusDelivered}" FontSize="12" TextColor="{StaticResource SubtleText}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <ProgressBar Grid.Column="1" Progress="{Binding DeliveredPct}" ProgressColor="#7C3AED" VerticalOptions="Center" />
+                            <Label Grid.Column="2" Text="{Binding DeliveredCount}" FontFamily="OpenSansSemibold" FontSize="12" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ MONTHLY CHART (admin-only) ═══════════════ -->
+                <Border Margin="16,12,16,0"
+                        StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="20,18"
+                        IsVisible="{Binding Auth.CanSeeShopWideDashboard}">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.06" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding L.TrendLabel}" Style="{StaticResource SectionTitle}" />
+                            <Label Text="{Binding L.TotalOrdersLabel}"
+                                   FontFamily="OpenSansSemibold" FontSize="16"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                        </VerticalStackLayout>
+                        <skia:SKCanvasView x:Name="MonthlyChart"
+                                           HeightRequest="160"
+                                           PaintSurface="OnMonthlyChartPaint" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ MY WORK (employee view — Phase 4) ═══════════════ -->
+                <!-- Wrapped once at the section level so both the header and the list/placeholder
+                     appear or hide together based on role. -->
+                <VerticalStackLayout Margin="16,-16,16,0" Spacing="10"
+                                     IsVisible="{Binding Auth.CanSeeShopWideDashboard, Converter={StaticResource InvertedBoolConverter}}">
+
+                    <!-- Section header -->
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Padding="4,4,4,0">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="{Binding L.MyWorkTitle}"
+                                   FontFamily="OpenSansSemibold" FontSize="16"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                            <Label Text="{Binding L.MyWorkSubtitle}"
+                                   FontSize="12" TextColor="{StaticResource SubtleText}" />
+                        </VerticalStackLayout>
+
+                        <!-- Count pill -->
+                        <Border Grid.Column="1"
+                                StrokeShape="RoundRectangle 10"
+                                BackgroundColor="{StaticResource PrimarySoft}"
+                                StrokeThickness="0" Padding="10,4"
+                                VerticalOptions="Center"
+                                IsVisible="{Binding HasNoAssignedWork, Converter={StaticResource InvertedBoolConverter}}">
+                            <Label Text="{Binding MyWork.Count}" FontSize="12"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource Primary}" />
+                        </Border>
+                    </Grid>
+
+                    <!-- Empty state -->
+                    <Border StrokeShape="RoundRectangle 16"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                            Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="20,22"
+                            IsVisible="{Binding HasNoAssignedWork}">
+                        <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                            <Border WidthRequest="56" HeightRequest="56"
+                                    StrokeShape="RoundRectangle 28"
+                                    BackgroundColor="{StaticResource PrimarySoft}"
+                                    StrokeThickness="0" HorizontalOptions="Center">
+                                <Label Text="&#x1F4CB;" FontSize="24"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Text="{Binding L.NoAssignedWorkTitle}"
+                                   FontFamily="OpenSansSemibold" FontSize="16"
+                                   HorizontalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                            <Label Text="{Binding L.NoAssignedWorkHint}"
+                                   FontSize="13" TextColor="{StaticResource SubtleText}"
+                                   HorizontalTextAlignment="Center"
+                                   MaximumWidthRequest="320" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- My Work items — rendered with BindableLayout instead of a
+                         nested CollectionView so scrolling stays smooth inside the
+                         outer ScrollView on Windows. -->
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding MyWork}" Spacing="10"
+                                         IsVisible="{Binding HasNoAssignedWork, Converter={StaticResource InvertedBoolConverter}}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MyWorkItem">
+                                <Border StrokeShape="RoundRectangle 14"
+                                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                                        Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                                        Padding="0">
+                                    <VerticalStackLayout Spacing="0">
+
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12"
+                                              RowDefinitions="Auto,Auto" RowSpacing="6"
+                                              Padding="14,12">
+                                            <!-- Stage color chip -->
+                                            <Border Grid.Column="0" Grid.RowSpan="2"
+                                                    WidthRequest="5" HeightRequest="46"
+                                                    StrokeShape="RoundRectangle 3"
+                                                    BackgroundColor="{Binding StageColor}"
+                                                    StrokeThickness="0"
+                                                    VerticalOptions="Center" />
+
+                                            <!-- Customer / order info -->
+                                            <VerticalStackLayout Grid.Column="1" Grid.Row="0" Spacing="2">
+                                                <Label Text="{Binding CustomerName}"
+                                                       FontFamily="OpenSansSemibold" FontSize="15"
+                                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                                       LineBreakMode="TailTruncation" />
+                                                <Label Text="{Binding OrderNumber}"
+                                                       FontSize="12" TextColor="{StaticResource SubtleText}" />
+                                            </VerticalStackLayout>
+
+                                            <!-- Stage pill -->
+                                            <Border Grid.Column="2" Grid.Row="0"
+                                                    StrokeShape="RoundRectangle 9"
+                                                    BackgroundColor="{Binding StageColor}"
+                                                    StrokeThickness="0" Padding="8,3"
+                                                    VerticalOptions="Center">
+                                                <Label Text="{Binding StageLabel}" FontSize="11"
+                                                       FontFamily="OpenSansSemibold"
+                                                       TextColor="White" />
+                                            </Border>
+
+                                            <!-- Meta row: Due + overdue indicator -->
+                                            <HorizontalStackLayout Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1"
+                                                                   Spacing="8">
+                                                <Label Text="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.L.DueLabel}"
+                                                       FontSize="11" CharacterSpacing="0.8"
+                                                       TextColor="{StaticResource SubtleText}"
+                                                       VerticalOptions="Center" />
+                                                <Label Text="{Binding DueLabel}" FontSize="12"
+                                                       FontFamily="OpenSansSemibold"
+                                                       TextColor="{Binding IsOverdue, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#DC2626|#0F172A'}"
+                                                       VerticalOptions="Center" />
+                                                <Border StrokeShape="RoundRectangle 6"
+                                                        BackgroundColor="{StaticResource DangerSoft}"
+                                                        StrokeThickness="0" Padding="6,2"
+                                                        IsVisible="{Binding IsOverdue}">
+                                                    <Label Text="!" FontSize="10" FontFamily="OpenSansSemibold"
+                                                           TextColor="{StaticResource DangerRed}" />
+                                                </Border>
+                                            </HorizontalStackLayout>
+                                        </Grid>
+
+                                        <BoxView HeightRequest="1"
+                                                 BackgroundColor="{StaticResource DividerLine}"
+                                                 Margin="14,0" />
+
+                                        <!-- Row actions: View + Mark Complete -->
+                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Padding="12,10,12,12">
+                                            <Border Grid.Column="0"
+                                                    StrokeShape="RoundRectangle 10"
+                                                    BackgroundColor="Transparent"
+                                                    Stroke="{StaticResource CardStroke}" StrokeThickness="1"
+                                                    Padding="12,8">
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewMyWorkOrderCommand}"
+                                                        CommandParameter="{Binding .}" />
+                                                </Border.GestureRecognizers>
+                                                <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
+                                                    <Label Text="&#x1F441;" FontSize="12" VerticalOptions="Center" />
+                                                    <Label Text="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.L.ViewOrderLabel}"
+                                                           FontSize="12" FontFamily="OpenSansSemibold"
+                                                           TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                                           VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
+                                            </Border>
+
+                                            <Border Grid.Column="1"
+                                                    StrokeShape="RoundRectangle 10"
+                                                    BackgroundColor="{StaticResource Primary}"
+                                                    StrokeThickness="0"
+                                                    Padding="12,8">
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.MarkCompleteCommand}"
+                                                        CommandParameter="{Binding .}" />
+                                                </Border.GestureRecognizers>
+                                                <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
+                                                    <Label Text="&#x2714;" FontSize="12" TextColor="White" VerticalOptions="Center" />
+                                                    <Label Text="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.L.MarkCompleteLabel}"
+                                                           FontSize="12" FontFamily="OpenSansSemibold"
+                                                           TextColor="White" VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
+                                            </Border>
+                                        </Grid>
+
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+
+                <!-- ═══════════════ RECENT ORDERS ═══════════════ -->
+                <Border Margin="16,12,16,0"
+                        StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="20,18">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.06" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="{Binding L.ActivityLabel}" Style="{StaticResource SectionTitle}" />
+                            <Label Text="{Binding L.RecentOrdersLabel}"
+                                   FontFamily="OpenSansSemibold" FontSize="16"
+                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                        </VerticalStackLayout>
+                        <CollectionView ItemsSource="{Binding RecentOrders}">
+                            <CollectionView.EmptyView>
+                                <VerticalStackLayout Spacing="6" Padding="0,20" HorizontalOptions="Center">
+                                    <Label Text="&#x1F4ED;" FontSize="28" HorizontalOptions="Center" Opacity="0.5" />
+                                    <Label Text="{Binding L.NoOrdersYetLabel}" TextColor="{StaticResource SubtleText}" FontSize="13" HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="models:RecentOrderInfo">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="2,10" ColumnSpacing="12">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DashboardViewModel}}, Path=GoToCustomerCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
+                                        <Border Grid.Column="0"
+                                                WidthRequest="6" HeightRequest="36"
+                                                StrokeShape="RoundRectangle 3"
+                                                BackgroundColor="{Binding Status, Converter={StaticResource OrderStatusColorConverter}}"
+                                                StrokeThickness="0"
+                                                VerticalOptions="Center" />
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding CustomerName}" FontFamily="OpenSansSemibold" FontSize="14" />
+                                            <Label FontSize="12" TextColor="{StaticResource SubtleText}">
+                                                <Label.FormattedText>
+                                                    <FormattedString>
+                                                        <Span Text="{Binding OrderNumber}" />
+                                                        <Span Text=" &#x2022; " />
+                                                        <Span Text="{Binding Date, StringFormat='{0:dd MMM}'}" />
+                                                    </FormattedString>
+                                                </Label.FormattedText>
+                                            </Label>
+                                        </VerticalStackLayout>
+                                        <Border Grid.Column="2"
+                                                Padding="10,4"
+                                                StrokeShape="RoundRectangle 10"
+                                                Stroke="Transparent"
+                                                BackgroundColor="{Binding Status, Converter={StaticResource OrderStatusColorConverter}}"
+                                                VerticalOptions="Center">
+                                            <Label Text="{Binding Status, Converter={StaticResource OrderStatusToLocalizedStringConverter}}"
+                                                   FontSize="11" TextColor="White"
+                                                   FontFamily="OpenSansSemibold" />
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ MONEY WIDGETS (admin — Phase 8) ═══════════════ -->
+                <!-- Two side-by-side tiles: outstanding balance (owed to shop)
+                     and revenue this month. Hidden for employees + only shown
+                     when the shop has any pricing recorded, so pre-Phase-8
+                     installs don't display two empty ₹0 tiles. -->
+                <Grid Margin="16,12,16,0" ColumnDefinitions="*,*" ColumnSpacing="12"
+                      IsVisible="{Binding Auth.CanSeeShopWideDashboard}">
+                    <!-- Outstanding — amber if any balance, muted otherwise -->
+                    <Border Grid.Column="0"
+                            StrokeShape="RoundRectangle 16"
+                            Padding="16,14"
+                            StrokeThickness="0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#F59E0B" Offset="0.0" />
+                                <GradientStop Color="#DC2626" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.10" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding L.OutstandingLabel}"
+                                   FontSize="11" CharacterSpacing="1.4"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="#FEF3C7" />
+                            <Label Text="{Binding OutstandingBalanceDisplay}"
+                                   FontFamily="OpenSansSemibold" FontSize="22"
+                                   TextColor="White" LineBreakMode="TailTruncation" />
+                            <Label FontSize="11" TextColor="#FEF3C7">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding UnpaidOrderCount}" />
+                                        <Span Text="  " />
+                                        <Span Text="{Binding L.FilterOrdersLabel}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Revenue this month — green -->
+                    <Border Grid.Column="1"
+                            StrokeShape="RoundRectangle 16"
+                            Padding="16,14"
+                            StrokeThickness="0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#10B981" Offset="0.0" />
+                                <GradientStop Color="#059669" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.10" />
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding L.RevenueThisMonthLabel}"
+                                   FontSize="11" CharacterSpacing="1.4"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="#D1FAE5" />
+                            <Label Text="{Binding RevenueThisMonthDisplay}"
+                                   FontFamily="OpenSansSemibold" FontSize="22"
+                                   TextColor="White" LineBreakMode="TailTruncation" />
+                            <Label Text="&#x1F4C8;" FontSize="18" TextColor="#D1FAE5" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- ═══════════════ ATTENTION NEEDED (admin — Phase 7) ═══════════════ -->
+                <!-- Rush orders + orders stuck ≥ 3 days in the current stage.
+                     Whole card is hidden when there's nothing to worry about so
+                     the dashboard stays calm on quiet days. -->
+                <Border Margin="16,12,16,0"
+                        StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="20,18"
+                        IsVisible="{Binding Auth.CanSeeShopWideDashboard}">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.06" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding L.AttentionNeededLabel}" Style="{StaticResource SectionTitle}" />
+                                <Label Text="{Binding L.DeliveryCalendarLabel}"
+                                       FontFamily="OpenSansSemibold" FontSize="16"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="{StaticResource PrimarySoft}"
+                                    StrokeThickness="0" Padding="10,4"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenDeliveryCalendarCommand}" />
+                                </Border.GestureRecognizers>
+                                <Label Text="{Binding L.ViewAllLabel}" FontSize="11"
+                                       FontFamily="OpenSansSemibold"
+                                       TextColor="{StaticResource Primary}" />
+                            </Border>
+                        </Grid>
+
+                        <!-- Empty state: keep the card visible but show a calming
+                             "nothing stuck" message so admins get positive feedback. -->
+                        <VerticalStackLayout Spacing="6" Padding="0,20" HorizontalOptions="Center"
+                                             IsVisible="{Binding HasAttentionItems, Converter={StaticResource InvertedBoolConverter}}">
+                            <Label Text="&#x2705;" FontSize="28" HorizontalOptions="Center" />
+                            <Label Text="{Binding L.NoStuckOrdersLabel}"
+                                   TextColor="{StaticResource SubtleText}" FontSize="13"
+                                   HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+
+                        <!-- Attention rows: tint pill + order # + subtitle. Whole
+                             row is tappable and jumps to the customer detail page. -->
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding AttentionOrders}" Spacing="4"
+                                             IsVisible="{Binding HasAttentionItems}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:AttentionOrderItem">
+                                    <Border StrokeShape="RoundRectangle 10"
+                                            BackgroundColor="Transparent"
+                                            Padding="4">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenAttentionOrderCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="0,4">
+                                            <Border Grid.Column="0"
+                                                    WidthRequest="6" HeightRequest="32"
+                                                    StrokeShape="RoundRectangle 3"
+                                                    BackgroundColor="{Binding TintColor}"
+                                                    StrokeThickness="0"
+                                                    VerticalOptions="Center" />
+                                            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                                <Label Text="{Binding OrderNumber}"
+                                                       FontSize="14" FontFamily="OpenSansSemibold"
+                                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                                                <Label Text="{Binding CustomerName}"
+                                                       FontSize="11" TextColor="{StaticResource SubtleText}"
+                                                       LineBreakMode="TailTruncation" />
+                                            </VerticalStackLayout>
+                                            <Border Grid.Column="2"
+                                                    Padding="8,3"
+                                                    StrokeShape="RoundRectangle 10"
+                                                    BackgroundColor="{Binding TintColor}"
+                                                    StrokeThickness="0"
+                                                    VerticalOptions="Center">
+                                                <Label Text="{Binding SubtitleLabel}"
+                                                       FontSize="10" TextColor="White"
+                                                       FontFamily="OpenSansSemibold" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══════════════ RECENT ACTIVITY (admin only — Phase 5) ═══════════════ -->
+                <Border Margin="16,12,16,0"
+                        StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardSurface}, Dark={StaticResource CardSurfaceDark}}"
+                        Stroke="{StaticResource CardStroke}" StrokeThickness="1" Padding="20,18"
+                        IsVisible="{Binding Auth.CanSeeShopWideDashboard}">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,4" Radius="14" Opacity="0.06" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding L.ActivityLabel}" Style="{StaticResource SectionTitle}" />
+                                <Label Text="{Binding L.RecentActivityLabel}"
+                                       FontFamily="OpenSansSemibold" FontSize="16"
+                                       TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}" />
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="{StaticResource PrimarySoft}"
+                                    StrokeThickness="0" Padding="10,4"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenActivityLogCommand}" />
+                                </Border.GestureRecognizers>
+                                <Label Text="{Binding L.ViewAllLabel}" FontSize="11"
+                                       FontFamily="OpenSansSemibold"
+                                       TextColor="{StaticResource Primary}" />
+                            </Border>
+                        </Grid>
+
+                        <!-- Empty state -->
+                        <VerticalStackLayout Spacing="6" Padding="0,20" HorizontalOptions="Center"
+                                             IsVisible="{Binding HasRecentActivity, Converter={StaticResource InvertedBoolConverter}}">
+                            <Label Text="&#x1F4DC;" FontSize="28" HorizontalOptions="Center" Opacity="0.5" />
+                            <Label Text="{Binding L.NoActivityHint}"
+                                   TextColor="{StaticResource SubtleText}" FontSize="13"
+                                   HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+
+                        <!-- Feed rows -->
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentActivity}" Spacing="0"
+                                             IsVisible="{Binding HasRecentActivity}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ActivityRowViewModel">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="2,8" ColumnSpacing="12">
+                                        <Border Grid.Column="0"
+                                                WidthRequest="30" HeightRequest="30"
+                                                StrokeShape="RoundRectangle 15"
+                                                BackgroundColor="{Binding ActionColor}"
+                                                StrokeThickness="0"
+                                                VerticalOptions="Center">
+                                            <Label Text="{Binding Icon}" FontSize="13"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding Summary}"
+                                                   FontSize="13"
+                                                   TextColor="{AppThemeBinding Light={StaticResource PrimaryText}, Dark={StaticResource PrimaryTextDark}}"
+                                                   LineBreakMode="TailTruncation" />
+                                            <Label Text="{Binding UserDisplayName}"
+                                                   FontSize="11" TextColor="{StaticResource SubtleText}" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="2" Text="{Binding RelativeTime}"
+                                               FontSize="11" FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource SubtleText}"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>
