@@ -79,8 +79,10 @@
 	</ItemGroup>
 
 	<!-- Android-only: on-device ML Kit OCR (free, no cloud) -->
-	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
 		<PackageReference Include="Xamarin.Google.MLKit.TextRecognition" Version="116.0.1.8" />
+		<PackageReference Include="Xamarin.Google.MLKit.Vision.Common" Version="116.0.0.16" />
+		<PackageReference Include="Xamarin.Google.MLKit.Vision.Text" Version="116.0.0.16" />
 		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" Version="2.11.0.1" />
 		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Common" Version="2.11.0.1" />
 	</ItemGroup>
