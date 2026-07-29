@@ -82,7 +82,6 @@
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
 		<PackageReference Include="Xamarin.Google.MLKit.TextRecognition" Version="116.0.1.8" />
 		<PackageReference Include="Xamarin.Google.MLKit.Vision.Common" Version="117.3.0.19" />
-		<PackageReference Include="Xamarin.Google.MLKit.Vision.Text" Version="117.0.0.8" />
 		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" Version="2.11.0.1" />
 		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Common" Version="2.11.0.1" />
 	</ItemGroup>
