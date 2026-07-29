@@ -1,4 +1,5 @@
-﻿using Android.Gms.Extensions;
+﻿#if ANDROID
+using Android.Gms.Extensions;
 using Android.Graphics;
 using Google.MLKit.Vision.Common;
 using Google.MLKit.Vision.Text;
@@ -33,3 +34,4 @@ public class CameraOcrService : ICameraOcrService
         return result?.Text;
     }
 }
+#endif
